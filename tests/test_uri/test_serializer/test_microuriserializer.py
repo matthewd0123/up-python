@@ -48,9 +48,11 @@ class TestMicroUriSerializer(unittest.TestCase):
         self.assertTrue(UriValidator.is_empty(uri2))
 
     def test_serialize_uri(self):
-        uri = UUri(entity=UEntity(id=29999, version_major=254), resource=UResource(id=19999))
+        uri = UUri(entity=UEntity(id=29999, version_major=254), resource=UResourceBuilder.from_id(19999))
         bytes_uuri = MicroUriSerializer().serialize(uri)
         uri2 = MicroUriSerializer().deserialize(bytes_uuri)
+        self.assertTrue(UriValidator.is_micro_form(uri))
+        self.assertTrue(len(bytes_uuri) > 0)
         self.assertEqual(uri, uri2)
 
     def test_serialize_remote_uri_without_address(self):

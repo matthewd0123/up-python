@@ -93,7 +93,7 @@ class MicroUriSerializer(UriSerializer):
                 address_type = AddressType.IPv6
             else:
                 return bytearray()
-        else:
+        elif uri.authority.HasField('id'):
             address_type = AddressType.ID
 
         os.write(address_type.value.to_bytes(1, 'big'))
