@@ -49,7 +49,7 @@ class CloudEventValidator(ABC):
         """
         cloud_event_type = ce.get_attributes().get("type")
 
-        if cloud_event_type is None or not cloud_event_type:
+        if cloud_event_type is None:
             return Validators.PUBLISH.validator()
 
         message_type = UCloudEvent.get_message_type(cloud_event_type)
@@ -58,6 +58,8 @@ class CloudEventValidator(ABC):
             return Validators.RESPONSE.validator()
         elif message_type == UMessageType.UMESSAGE_TYPE_REQUEST:
             return Validators.REQUEST.validator()
+        elif message_type == UMessageType.UMESSAGE_TYPE_NOTIFICATION:
+            return Validators.NOTIFICATION.validator()
         else:
             return Validators.PUBLISH.validator()
 
@@ -269,6 +271,16 @@ class Notification(Publish):
                     f"Invalid Notification type CloudEvent sink [{sink}]. {check_sink.get_message()}")
 
         return ValidationResult.success()
+    
+    def validate_source(self, cl_event: CloudEvent) -> ValidationResult:
+        source = UCloudEvent.get_source(cl_event)
+        check_source = self.validate_topic_uri(source)
+        if check_source.is_failure():
+            return ValidationResult.failure(f"Invalid Notification type CloudEvent source [{source}], {check_source.get_message()}")
+    
+    def validate_type(self, cl_event: CloudEvent) -> ValidationResult:
+        return ValidationResult.success() if UCloudEvent.get_type(cl_event) == "not.v1" else \
+                ValidationResult.failure(f"Invalid CloudEvent type [{UCloudEvent.get_type(cl_event)}]. CloudEvent of type Notification must have a type of 'not.v1'")
 
     def __str__(self):
         return "CloudEventValidator.Notification"

@@ -28,7 +28,7 @@ import time
 from abc import abstractmethod
 from enum import Enum
 from uprotocol.proto.uri_pb2 import UUri
-from uprotocol.proto.uattributes_pb2 import UAttributes, UMessageType
+from uprotocol.proto.uattributes_pb2 import UAttributes, UMessageType, UPriority
 from uprotocol.proto.ustatus_pb2 import UCode
 from uprotocol.uri.validator.urivalidator import UriValidator
 from uprotocol.uuid.factory.uuidutils import UUIDUtils
@@ -61,6 +61,8 @@ class UAttributesValidator:
             return Validators.RESPONSE.validator()
         elif attribute.type == UMessageType.UMESSAGE_TYPE_REQUEST:
             return Validators.REQUEST.validator()
+        elif attribute.type == UMessageType.UMESSAGE_TYPE_NOTIFICATION:
+            return Validators.NOTIFICATION.validator()
         else:
             return Validators.PUBLISH.validator()
 
@@ -73,7 +75,8 @@ class UAttributesValidator:
         """
         error_messages = [self.validate_type(attributes),
                           self.validate_ttl(attributes),
-                          self.validate_sink(attributes), self.validate_comm_status(attributes),
+                          self.validate_sink(attributes),
+                          self.validate_priority(attributes),
                           self.validate_permission_level(attributes), self.validate_req_id(attributes)]
 
         error_messages = [status.get_message() for status in error_messages if
@@ -94,9 +97,9 @@ class UAttributesValidator:
         @return Returns a true if the original time plus the ttl is less than the current time
         '''
         ttl = u_attributes.ttl
-        maybe_time = UUIDUtils.getTime(u_attributes.id)
+        maybe_time = UUIDUtils.get_time(u_attributes.id)
 
-        if not u_attributes.HasField('ttl') or maybe_time is None or ttl <=0:
+        if maybe_time is None or ttl <=0:
             return False
     
         return (maybe_time + ttl) < int(time.time() * 1000)
@@ -125,6 +128,17 @@ class UAttributesValidator:
         @return:Returns a  ValidationResult that is success or failed with a failure message.
         """
         return UriValidator.validate(attr.sink) if attr.HasField('sink') else ValidationResult.success()
+    
+    @staticmethod
+    def validate_priority(attr: UAttributes):
+        """
+        Validate the priority value to ensure it is one of the known CS values
+    
+        @param attributes Attributes object containing the Priority to validate.
+        @return Returns a ValidationResult that is success or failed with a failure message.
+        """
+        return ValidationResult.success() if attr.priority>= UPriority.UPRIORITY_CS0 \
+            else ValidationResult.failure(f"Invalid UPriority [{UPriority.Name(attr.priority)}]")
 
     @staticmethod
     def validate_permission_level(attr: UAttributes) -> ValidationResult:
@@ -140,22 +154,6 @@ class UAttributesValidator:
             return ValidationResult.success()
 
     @staticmethod
-    def validate_comm_status(attr: UAttributes) -> ValidationResult:
-        """
-        Validate the commStatus for the default case. If the UAttributes does not contain a comm status then the
-         ValidationResult is ok.<br><br>
-        @param attr:UAttributes object containing the comm status to validate.
-        @return:Returns a  ValidationResult that is success or failed with a failure message.
-        """
-        if attr.HasField('commstatus'):
-            try:
-                UCode.Name(attr.commstatus)
-            except ValueError:
-                return ValidationResult.failure("Invalid Communication Status Code")
-
-        return ValidationResult.success()
-
-    @staticmethod
     def validate_req_id(attr: UAttributes) -> ValidationResult:
         """
         Validate the correlationId for the default case. If the UAttributes does not contain a request id then the
@@ -164,7 +162,7 @@ class UAttributesValidator:
         @return:Returns a  ValidationResult that is success or failed with a failure message.
         """
 
-        if attr.HasField('reqid') and not UUIDUtils.isuuid(attr.reqid):
+        if attr.HasField('reqid') and not UUIDUtils.is_uuid(attr.reqid):
             return ValidationResult.failure("Invalid UUID")
         else:
             return ValidationResult.success()
@@ -274,11 +272,43 @@ class Response(UAttributesValidator):
         @param attributes_value:UAttributes object containing the correlation id to validate.
         @return:Returns a  ValidationResult that is success or failed with a failure message.
         """
-        return ValidationResult.success() if attributes_value.reqid and UUIDUtils.isuuid(
+        return ValidationResult.success() if attributes_value.reqid and UUIDUtils.is_uuid(
             attributes_value.reqid) else ValidationResult.failure("Missing correlationId")
 
     def __str__(self):
         return "UAttributesValidator.Response"
+
+class Notification(UAttributesValidator):
+    """
+    Implements validations for UAttributes that define a message that is meant for notifications.
+    """
+
+    def validate_type(self, attributes_value: UAttributes) -> ValidationResult:
+        """
+        Validates that attributes for a message meant for Notification state changes has the correct type.<br><br>
+        @param attributes_value:UAttributes object containing the message type to validate.
+        @return:Returns a ValidationResult that is success or failed with a failure message.
+        """
+        return ValidationResult.success() if attributes_value.type == UMessageType.UMESSAGE_TYPE_NOTIFICATION else (
+            ValidationResult.failure(
+                f"Wrong Attribute Type [{UMessageType.Name(attributes_value.type)}]"))
+
+    def validate_sink(self, attributes_value: UAttributes) -> ValidationResult:
+        """
+        Validates that attributes for a message meant for an RPC response has a destination sink.<br>In the case of
+        an RPC response, the sink is required.<br><br>
+        @param attributes_value:UAttributes object containing the sink to validate.
+        @return:Returns a  ValidationResult that is success or failed with a failure message.
+        """
+        if attributes_value is None:
+            return ValidationResult.failure("UAttributes cannot be null.")
+        if not attributes_value.HasField('sink') or attributes_value.sink == UUri():
+            return ValidationResult.failure("Missing Sink")
+        return ValidationResult.success()
+    
+    def __str__(self):
+        return "UAttributesValidator.Notification"
+
 
 
 class Validators(Enum):
@@ -289,6 +319,7 @@ class Validators(Enum):
     PUBLISH = Publish()
     REQUEST = Request()
     RESPONSE = Response()
+    NOTIFICATION = Notification()
 
     def validator(self):
         return self.value

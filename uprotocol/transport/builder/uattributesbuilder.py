@@ -24,9 +24,11 @@
 
 # -------------------------------------------------------------------------
 
+from multimethod import multimethod
 
 from uprotocol.proto.uattributes_pb2 import UAttributes, UPriority, UMessageType
 from uprotocol.proto.uri_pb2 import UUri
+from uprotocol.proto.ustatus_pb2 import UCode
 from uprotocol.proto.uuid_pb2 import UUID
 from uprotocol.uuid.factory.uuidfactory import *
 
@@ -82,7 +84,7 @@ class UAttributesBuilder:
             raise ValueError("UPriority cannot be null.")
         if sink is None:
             raise ValueError("sink cannot be null.")
-        return UAttributesBuilder(source, Factories.UPROTOCOL.create(), UMessageType.UMESSAGE_TYPE_PUBLISH, priority
+        return UAttributesBuilder(source, Factories.UPROTOCOL.create(), UMessageType.UMESSAGE_TYPE_NOTIFICATION, priority
                                   ).withSink(sink)
 
     @staticmethod
@@ -107,7 +109,7 @@ class UAttributesBuilder:
         return UAttributesBuilder(source, Factories.UPROTOCOL.create(), UMessageType.UMESSAGE_TYPE_REQUEST, priority
                                   ).withTtl(ttl).withSink(sink)
 
-    @staticmethod
+    @multimethod
     def response(source: UUri,  sink: UUri, priority: UPriority, reqid: UUID):
         """
         Construct a UAttributesBuilder for a response message.
@@ -126,6 +128,12 @@ class UAttributesBuilder:
 
         return UAttributesBuilder(source, Factories.UPROTOCOL.create(), UMessageType.UMESSAGE_TYPE_RESPONSE, priority
                                   ).withSink(sink).withReqId(reqid)
+
+    @multimethod
+    def response(request: UAttributes):
+        if request is None:
+            raise ValueError("request cannot be null.")
+        return UAttributesBuilder.response(request.sink, request.source, request.priority, request.id)
 
     def withTtl(self, ttl: int):
         """
@@ -167,7 +175,7 @@ class UAttributesBuilder:
         self.plevel = plevel
         return self
 
-    def withCommStatus(self, commstatus: int):
+    def withCommStatus(self, commstatus: UCode):
         """
         Add the communication status of the message.
 

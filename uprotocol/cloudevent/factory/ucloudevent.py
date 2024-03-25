@@ -1,5 +1,4 @@
 # -------------------------------------------------------------------------
-import time
 # Copyright (c) 2023 General Motors GTO LLC
 #
 # Licensed to the Apache Software Foundation (ASF) under one
@@ -25,6 +24,7 @@ import time
 # -------------------------------------------------------------------------
 
 
+import time
 from datetime import datetime, timedelta
 
 from cloudevents.http import CloudEvent
@@ -170,7 +170,7 @@ class UCloudEvent:
         return UCloudEvent.extract_string_value_from_attributes("token", ce)
 
     @staticmethod
-    def get_communication_status(ce: CloudEvent) -> int:
+    def get_communication_status(ce: CloudEvent) -> UCode:
         """
         Extract the integer value of the communication status attribute from a cloud event. The communication status
         attribute is optional. If there was a platform communication error that occurred while delivering this
@@ -185,6 +185,15 @@ class UCloudEvent:
             return int(comm_status) if comm_status is not None else UCode.OK
         except:
             return UCode.OK
+        
+    @staticmethod
+    def get_traceparent(ce: CloudEvent) -> str:
+        """
+        Extract the string value of the traceparent attribute from a cloud event. The traceparent attribute is optional.
+        @param ce: CloudEvent with traceparent to be extracted.
+        @return: Returns the string value of the traceparent if it exists, else returns None.
+        """
+        return UCloudEvent.extract_string_value_from_attributes("traceparent", ce)
 
     @staticmethod
     def has_communication_status_problem(ce: CloudEvent) -> bool:
@@ -259,7 +268,7 @@ class UCloudEvent:
             uuid = LongUuidSerializer.instance().deserialize(cloud_event_id)
             if uuid is None or uuid == UUID():
                 return False
-            delta =  int(round(time.time() * 1000)) - UUIDUtils.getTime(uuid)
+            delta =  int(round(time.time() * 1000)) - UUIDUtils.get_time(uuid)
         except ValueError:
             # Invalid UUID, handle accordingly
             delta = 0
@@ -275,7 +284,7 @@ class UCloudEvent:
         cloud_event_id = UCloudEvent.extract_string_value_from_attributes("id", ce)
         uuid = LongUuidSerializer.instance().deserialize(cloud_event_id)
 
-        return uuid is not None and UUIDUtils.isuuid(uuid)
+        return uuid is not None and UUIDUtils.is_uuid(uuid)
 
     @staticmethod
     def get_payload(ce: CloudEvent) -> any_pb2.Any:
@@ -358,11 +367,28 @@ class UCloudEvent:
 
     @staticmethod
     def get_event_type(type):
+        """
+        Get the string representation of the UMessageType. 
+        Note: The UMessageType is determined by the type of the CloudEvent. If 
+        the UMessageType is UMESSAGE_TYPE_NOTIFICATION, we assume the CloudEvent type
+        is "pub.v1" and the sink is present.
+        @param type The UMessageType
+        @return returns the string representation of the UMessageType
+        """
         return {UMessageType.UMESSAGE_TYPE_PUBLISH: "pub.v1", UMessageType.UMESSAGE_TYPE_REQUEST: "req.v1",
                 UMessageType.UMESSAGE_TYPE_RESPONSE: "res.v1"}.get(type, "")
 
     @staticmethod
     def get_message_type(ce_type):
+        """
+        Get the UMessageType from the string representation.
+        Note: The UMessageType is determined by the type of the CloudEvent.
+        If the CloudEvent type is "pub.v1" and the sink is present, the UMessageType is assumed to be
+        UMESSAGE_TYPE_NOTIFICATION, this is because uProtocol CloudEvent definition did not have an explicit
+        notification type.
+        @param cloudEvent The CloudEvent containing the data.
+        @return returns the UMessageType
+        """
         return {"pub.v1": UMessageType.UMESSAGE_TYPE_PUBLISH, "req.v1": UMessageType.UMESSAGE_TYPE_REQUEST,
                 "res.v1": UMessageType.UMESSAGE_TYPE_RESPONSE}.get(ce_type, UMessageType.UMESSAGE_TYPE_UNSPECIFIED)
 
@@ -412,6 +438,9 @@ class UCloudEvent:
         @return returns the cloud event
         """
 
+        if message is None:
+            raise ValueError("message cannot be null.")
+
         attributes = message.attributes
         payload = message.payload
 
@@ -446,6 +475,8 @@ class UCloudEvent:
             json_attributes['reqid'] = LongUuidSerializer.instance().serialize(attributes.reqid)
         if attributes.HasField('permission_level'):
             json_attributes['plevel'] = attributes.permission_level
+        if attributes.HasField('traceparent'):
+            json_attributes['traceparent'] = attributes.traceparent
 
         cloud_event = CloudEvent(json_attributes, data)
         return cloud_event
@@ -492,6 +523,10 @@ class UCloudEvent:
         token = UCloudEvent.get_token(event)
         if token is not None:
             attributes.token = token
+
+        traceparent = UCloudEvent.get_traceparent(event)
+        if traceparent is not None:
+            attributes.traceparent = traceparent
 
         plevel = UCloudEvent.extract_integer_value_from_attributes("plevel", event)
         if plevel is not None:

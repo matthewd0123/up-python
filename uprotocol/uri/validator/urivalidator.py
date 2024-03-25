@@ -24,13 +24,15 @@
 
 # -------------------------------------------------------------------------
 
+from multimethod import multimethod
 
 from uprotocol.proto.uri_pb2 import UAuthority
 from uprotocol.proto.uri_pb2 import UEntity
 from uprotocol.proto.uri_pb2 import UResource
 from uprotocol.proto.uri_pb2 import UUri
+from uprotocol.uri.factory.uresource_builder import UResourceBuilder
 from uprotocol.validation.validationresult import ValidationResult
-from multipledispatch import dispatch
+
 
 class UriValidator:
     """
@@ -97,37 +99,39 @@ class UriValidator:
         @param uri UUri to check if it is empty
         @return Returns true if this  URI is an empty container and has no valuable information in building uProtocol sinks or sources.
         '''
-        return uri is not None and not uri.HasField('authority') and not uri.HasField('entity') and not uri.HasField('resource')
+        return uri is None or uri == UUri()
 
-
-    @staticmethod
+    @multimethod
     def is_rpc_method(uri: UUri) -> bool:
         """
-        Returns true if this resource specifies an RPC method call or RPC response.<br><br>
+        Returns true if URI is of type RPC. A UUri is of type RPC if it contains the word rpc in the resource name 
+        and has an instance name and/or the id is less than MIN_TOPIC_ID.
         @param uri:
         @return:Returns true if this resource specifies an RPC method call or RPC response.
         """
-        return not UriValidator.is_empty(uri) and uri.resource.name == "rpc" and (
-                uri.resource.HasField('instance') and uri.resource.instance.strip() != "" or (
-                uri.resource.HasField('id') and uri.resource.id != 0))
+        return uri is not None and UriValidator.is_rpc_method(uri.resource)
+
+    @multimethod
+    def is_rpc_method(resource: UResource) -> bool:
+        """
+        Returns true if Uresource is of type RPC.
+        @param resource: UResource to check if it is of type RPC method
+        @return Returns true if URI is of type RPC.
+        """
+        return resource is not None and resource.name == "rpc" and \
+            (resource.HasField('instance') and resource.instance.strip() != "" or (
+                resource.HasField('id') and resource.id < UResourceBuilder.MIN_TOPIC_ID))
 
     @staticmethod
     def is_resolved(uri: UUri) -> bool:
 
-        return uri is not None and not UriValidator.is_empty(uri) and \
-            UriValidator.is_long_form(uri) and UriValidator.is_micro_form(uri)
+        return UriValidator.is_long_form(uri) and UriValidator.is_micro_form(uri)
 
     @staticmethod
     def is_rpc_response(uri: UUri) -> bool:
-        if uri is None:
-            return False
-        
-        resource = uri.resource
+        return uri is not None and uri.resource == UResourceBuilder.for_rpc_response()
 
-        return "rpc" in resource.name and uri.HasField("resource") and "response" in resource.instance and resource.HasField("id") and resource.id == 0
-
-    @staticmethod
-    @dispatch(UUri)
+    @multimethod
     def is_micro_form(uri: UUri) -> bool:
         """
         Determines if this UUri can be serialized into a micro form UUri.<br><br>
@@ -137,9 +141,8 @@ class UriValidator:
 
         return uri is not None and not UriValidator.is_empty(uri) and uri.entity.HasField('id') \
             and uri.resource.HasField('id') and UriValidator.is_micro_form(uri.authority)
-            
-    @staticmethod
-    @dispatch(UAuthority)
+
+    @multimethod
     def is_micro_form(authority: UAuthority) -> bool:
         '''
         check if UAuthority can be represented in micro format. Micro UAuthorities are local or ones 
@@ -148,11 +151,9 @@ class UriValidator:
         @return Returns true if UAuthority can be represented in micro format
         '''
 
-
         return UriValidator.is_local(authority) or (authority.HasField('ip') or (authority.HasField('id')))
 
-    @staticmethod
-    @dispatch(UUri)
+    @multimethod
     def is_long_form(uri: UUri) -> bool:
         """
         Determines if this UUri can be serialized into a long form UUri.<br><br>
@@ -162,17 +163,18 @@ class UriValidator:
 
         return uri is not None and not UriValidator.is_empty(uri) and UriValidator.is_long_form(uri.authority) and \
             uri.entity.name.strip() != "" and uri.resource.name.strip() != ""
-            
-    @staticmethod
-    @dispatch(UAuthority)
+
+    @multimethod
     def is_long_form(authority: UAuthority) -> bool:
         '''
-        Returns true if UAuthority contains names so that it can be serialized into long format.
+        Returns true if UAuthority is local contains names so that it can be serialized into long format.
         @param authority UAuthority to check
         @return Returns true if URI contains names so that it can be serialized into long format.
         '''
-        return authority is not None and authority.HasField('name') and authority.name.strip() != ""
-    
+        return authority is not None and (UriValidator.is_local(authority) or
+                                          (authority.HasField('name') and
+                                           authority.name.strip() != ""))
+
     @staticmethod
     def is_local(authority: UAuthority) -> bool:
         '''
@@ -189,5 +191,14 @@ class UriValidator:
         @param authority UAuthority to check if it is remote or not
         @return Returns true if UAuthority is remote meaning the name and/or ip/id is populated.
         '''
-        return (authority is not None) and (not authority == UAuthority()) and \
-            (UriValidator.is_long_form(authority) or UriValidator.is_micro_form(authority))
+        return (authority is not None) and (not authority == UAuthority())
+
+    @staticmethod
+    def is_short_form(uri: UUri) -> bool:
+        """
+        Return True of the UUri is Short form. A UUri that is micro form (contains numbers) can
+        also be a Short form Uri.
+        @param uri {@link UUri} to check
+        @return Returns true if contains ids can can be serialized to short format.
+        """
+        return UriValidator.is_micro_form(uri)

@@ -107,7 +107,7 @@ class TestCloudEventFactory(unittest.TestCase):
 
         # additional attributes
         u_cloud_event_attributes = UCloudEventAttributesBuilder().with_hash("somehash").with_priority(
-            UPriority.UPRIORITY_CS1).with_ttl(3).with_token("someOAuthToken").build()
+            UPriority.UPRIORITY_CS1).with_ttl(3).with_token("someOAuthToken").with_traceparent("sometraceparent").build()
 
         # build the cloud event
         cloud_event = CloudEventFactory.build_base_cloud_event("testme", source, proto_payload.SerializeToString(),
@@ -124,6 +124,7 @@ class TestCloudEventFactory(unittest.TestCase):
         self.assertEqual(UPriority.Name(UPriority.UPRIORITY_CS1), UCloudEvent.get_priority(cloud_event))
         self.assertEqual(3, UCloudEvent.get_ttl(cloud_event))
         self.assertEqual("someOAuthToken", UCloudEvent.get_token(cloud_event))
+        self.assertEqual("sometraceparent", UCloudEvent.get_traceparent(cloud_event))
         self.assertEqual(proto_payload.SerializeToString(), cloud_event.get_data())
 
     def test_create_base_cloud_event_with_datacontenttype_and_schema(self):

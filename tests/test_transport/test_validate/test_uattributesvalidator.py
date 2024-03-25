@@ -109,13 +109,6 @@ class TestUAttributesValidator(unittest.TestCase):
         self.assertTrue(status.is_failure())
         self.assertEqual("Invalid Permission Level", status.get_message())
 
-    def test_validate_uAttributes_for_publish_message_payload_invalid_communication_status(self):
-        attributes = UAttributesBuilder.publish(build_source(), UPriority.UPRIORITY_CS0).withCommStatus(-42).build()
-        validator = Validators.PUBLISH.validator()
-        status = validator.validate(attributes)
-        self.assertTrue(status.is_failure())
-        self.assertEqual("Invalid Communication Status Code", status.get_message())
-
     # def test_validate_uAttributes_for_publish_message_payload_invalid_request_id(self):
     #     uuid = java.util.UUID.randomUUID()
     #     attributes = UAttributesBuilder.publish(UPriority.UPRIORITY_CS0).withReqId(
@@ -176,14 +169,6 @@ class TestUAttributesValidator(unittest.TestCase):
         status = validator.validate(attributes)
         self.assertTrue(status.is_failure())
         self.assertEqual("Invalid Permission Level", status.get_message())
-
-    def test_validate_uAttributes_for_rpc_request_message_payload_invalid_communication_status(self):
-        attributes = UAttributesBuilder.request(build_source(), build_sink(), UPriority.UPRIORITY_CS4, 1000).withCommStatus(-42).build()
-
-        validator = Validators.REQUEST.validator()
-        status = validator.validate(attributes)
-        self.assertTrue(status.is_failure())
-        self.assertEqual("Invalid Communication Status Code", status.get_message())
 
     # def test_validate_uAttributes_for_rpc_request_message_payload_invalid_request_id(self):
     #     uuid_java = java.util.UUID.randomUUID()

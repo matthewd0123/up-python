@@ -25,11 +25,15 @@
 # -------------------------------------------------------------------------
 
 
+from unicodedata import name
 from uprotocol.proto.uri_pb2 import UResource
 
 
 class UResourceBuilder:
     MAX_RPC_ID = 1000
+
+    # The minimum topic ID, below this value are methods.
+    MIN_TOPIC_ID = 0x8000
 
     @staticmethod
     def for_rpc_response():
@@ -54,14 +58,25 @@ class UResourceBuilder:
         if id is None:
             raise ValueError("id cannot be None")
 
-        return UResourceBuilder.for_rpc_request_with_id(id) if id < UResourceBuilder.MAX_RPC_ID else UResource(id=id)
+        return UResourceBuilder.for_rpc_response() if id == 0 else UResourceBuilder.for_rpc_request_with_id(id) \
+            if id < UResourceBuilder.MIN_TOPIC_ID else UResource(id=id)
 
     @staticmethod
-    def from_proto(instance):
-        '''
-        Build a UResource from a protobuf message. This method will determine if
-        the message is a RPC or topic message based on the message type
-        @param message The protobuf message.
+    def from_uservice_topic(topic):
+        """
+        Build a UResource from a UServiceTopic that is defined in protos and 
+        available from generated stubs.
+        @param topic The UServiceTopic to build the UResource from.
         @return Returns a UResource for an RPC request.
-        '''
-        pass
+        """
+        if topic is None:
+            raise ValueError("topic cannot be None.")
+        name_and_instance_parts = topic.name.split("\\.")
+        resource_name = name_and_instance_parts[0]
+        resource_instance = None if len(name_and_instance_parts) <= 1 else name_and_instance_parts[1]
+
+        resource = UResource(name=resource_name, id=topic.id, message=topic.message)
+        if resource_instance is not None:
+            resource.instance(resource_instance)
+        
+        return resource

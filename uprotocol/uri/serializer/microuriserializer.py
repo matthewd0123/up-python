@@ -84,6 +84,7 @@ class MicroUriSerializer(UriSerializer):
         os = io.BytesIO()
         os.write(bytes([self.UP_VERSION]))
 
+        address_type = AddressType.LOCAL
         if uri.authority.HasField('ip'):
             length: int = len(uri.authority.ip)
             if length == 4:
@@ -92,10 +93,8 @@ class MicroUriSerializer(UriSerializer):
                 address_type = AddressType.IPv6
             else:
                 return bytearray()
-        elif uri.authority.HasField('id'):
-            address_type = AddressType.ID
         else:
-            address_type = AddressType.LOCAL
+            address_type = AddressType.ID
 
         os.write(address_type.value.to_bytes(1, 'big'))
 
@@ -129,7 +128,7 @@ class MicroUriSerializer(UriSerializer):
                 elif uri.authority.HasField("id"):
                     os.write(uri.authority.id)
             except Exception as e:
-                print(e)  # Handle the exception as needed
+                return b''
 
         return os.getvalue()
 

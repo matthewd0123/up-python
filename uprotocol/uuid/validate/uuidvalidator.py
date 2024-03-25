@@ -45,9 +45,9 @@ class UuidValidator(ABC):
 
     @staticmethod
     def get_validator(uuid: UUID):
-        if UUIDUtils.isUuidv6(uuid):
+        if UUIDUtils.is_uuidv6(uuid):
             return Validators.UUIDV6.validator()
-        elif UUIDUtils.isUProtocol(uuid):
+        elif UUIDUtils.is_uprotocol(uuid):
             return Validators.UPROTOCOL.validator()
         else:
             return Validators.UNKNOWN.validator()
@@ -65,7 +65,7 @@ class UuidValidator(ABC):
         raise NotImplementedError
 
     def validate_time(self, uuid: UUID) -> ValidationResult:
-        time = UUIDUtils.getTime(uuid)
+        time = UUIDUtils.get_time(uuid)
         return ValidationResult.success() if (time is not None and time > 0 )else ValidationResult.failure("Invalid UUID Time")
 
     @abstractmethod
@@ -83,20 +83,20 @@ class InvalidValidator(UuidValidator):
 
 class UUIDv6Validator(UuidValidator):
     def validate_version(self, uuid: UUID) -> ValidationResult:
-        version = UUIDUtils.getVersion(uuid)
+        version = UUIDUtils.get_version(uuid)
         return ValidationResult.success() if version and version == Version.VERSION_TIME_ORDERED else (
             ValidationResult.failure(
                 "Not a UUIDv6 Version"))
 
     def validate_variant(self, uuid: UUID) -> ValidationResult:
-        variant = UUIDUtils.getVariant(uuid)
+        variant = UUIDUtils.get_variant(uuid)
         return ValidationResult.success() if variant and "RFC 4122" in variant else ValidationResult.failure(
             "Invalid UUIDv6 variant")
 
 
 class UUIDv8Validator(UuidValidator):
     def validate_version(self, uuid: UUID) -> ValidationResult:
-        version = UUIDUtils.getVersion(uuid)
+        version = UUIDUtils.get_version(uuid)
         return ValidationResult.success() if version and version == Version.VERSION_UPROTOCOL else (
             ValidationResult.failure(
                 "Invalid UUIDv8 Version"))

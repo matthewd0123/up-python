@@ -115,7 +115,7 @@ class TestMicroUriSerializer(unittest.TestCase):
     def test_serialize_good_ipv6_based_authority(self):
         uri = UUri(authority=UAuthority(
             ip=bytes(socket.inet_pton(socket.AF_INET6, "2001:0db8:85a3:0000:0000:8a2e:0370:7334"))),
-            entity=UEntity(id=29999, version_major=254), resource=UResource(id=19999))
+            entity=UEntity(id=29999, version_major=254), resource=UResource(id=19999, name="rpc"))
         bytes_uuri = MicroUriSerializer().serialize(uri)
         uri2 = MicroUriSerializer().deserialize(bytes_uuri)
         self.assertTrue(UriValidator.is_micro_form(uri))
@@ -126,7 +126,7 @@ class TestMicroUriSerializer(unittest.TestCase):
         size = 13
         byteArray = bytearray(i for i in range(size))
         uri = UUri(authority=UAuthority(id=bytes(byteArray)), entity=UEntity(id=29999, version_major=254),
-                   resource=UResource(id=19999))
+                   resource=UResource(id=19999, name="rpc"))
         bytes_uuri = MicroUriSerializer().serialize(uri)
         uri2 = MicroUriSerializer().deserialize(bytes_uuri)
         self.assertTrue(UriValidator.is_micro_form(uri))

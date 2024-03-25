@@ -201,6 +201,8 @@ class CloudEventFactory:
             json_attributes['priority'] = attributes.get_priority()
         if attributes.get_token() is not None:
             json_attributes['token'] = attributes.get_token()
+        if attributes.get_traceparent() is not None:
+            json_attributes['traceparent'] = attributes.get_traceparent()
 
         cloud_event = CloudEvent(json_attributes, proto_payload_bytes)
 

@@ -345,6 +345,28 @@ class TestUriValidator(unittest.TestCase):
             status = UriValidator.validate_rpc_response(uuri)
             self.assertTrue(status.is_failure())
 
+    def test_invalid_rpc_method_uri(self):
+        uuri: UUri = UUri(entity=UEntity(name="hello.world"), resource=UResource(name="testrpc", instance="SayHello"))
+        status = UriValidator.validate_rpc_method(uuri)
+        self.assertFalse(UriValidator.is_rpc_method(uuri))
+        self.assertFalse(status.is_success())
+
+    def test_invalid_rpc_response_uri(self):
+        uuri: UUri = UUri(entity=UEntity(name="hartley"), resource=UResource(name="rpc", id=19999))
+        status = UriValidator.validate_rpc_response(uuri)
+        self.assertFalse(UriValidator.is_rpc_response(uuri))
+        self.assertFalse(status.is_success())
+
+        uuri: UUri = UUri(entity=UEntity(name="hartley"), resource=UResource(name="testrpc", instance="response"))
+        status = UriValidator.validate_rpc_response(uuri)
+        self.assertFalse(UriValidator.is_rpc_response(uuri))
+        self.assertFalse(status.is_success())
+
+        uuri: UUri = UUri(entity=UEntity(name="hartley"), resource=UResource(name="testrpc", instance="response"))
+        status = UriValidator.validate_rpc_response(uuri)
+        self.assertFalse(UriValidator.is_rpc_response(uuri))
+        self.assertFalse(status.is_success()) 
+
     @staticmethod
     def get_json_object():
         current_directory = os.getcwd()

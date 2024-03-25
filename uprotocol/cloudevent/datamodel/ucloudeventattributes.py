@@ -35,7 +35,7 @@ class UCloudEventAttributes:
     Specifies the properties that can configure the UCloudEvent.
     """
 
-    def __init__(self, priority: UPriority, hash_value: str = None, ttl: int = None, token: str = None):
+    def __init__(self, priority: UPriority, hash_value: str = None, ttl: int = None, token: str = None, traceparent: str = None):
         """
         Construct the properties object.<br><br>
         @param hash_value: an HMAC generated on the data portion of the CloudEvent message using the device key.
@@ -48,7 +48,7 @@ class UCloudEventAttributes:
         self.priority = priority
         self.ttl = ttl
         self.token = token
-        self.traceparent = None
+        self.traceparent = traceparent
 
     @staticmethod
     def empty():
@@ -96,6 +96,13 @@ class UCloudEventAttributes:
         @return: Returns an Optional OAuth token attribute.
         """
         return self.token if self.token and self.token.strip() else None
+    
+    def get_traceparent(self) -> str:
+        """
+        Traceparent of the event.
+        @return: Returns an optional traceparent attribute.
+        """
+        return self.traceparent
 
     def __eq__(self, other):
         if self is other:
@@ -180,7 +187,7 @@ class UCloudEventAttributesBuilder:
         Construct the UCloudEventAttributes from the builder.<br><br>
         @return: Returns a constructed UProperty.
         """
-        return UCloudEventAttributes(self.priority, self.hash, self.ttl, self.token)
+        return UCloudEventAttributes(self.priority, self.hash, self.ttl, self.token, self.traceparent)
 
 
 if __name__ == "__main__":

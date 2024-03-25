@@ -203,7 +203,7 @@ class TestUCloudEvent(unittest.TestCase):
     def test_from_message_with_valid_message(self):
         # additional attributes
         u_cloud_event_attributes = UCloudEventAttributesBuilder().with_priority(
-            UPriority.UPRIORITY_CS2).with_ttl(3).build()
+            UPriority.UPRIORITY_CS2).with_ttl(3).with_traceparent("someParent").build()
         cloud_event = CloudEventFactory.publish(build_uri_for_test(), build_proto_payload_for_test(),
                                                 u_cloud_event_attributes)
         u_message = UCloudEvent.toMessage(cloud_event)

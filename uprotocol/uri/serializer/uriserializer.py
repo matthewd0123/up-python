@@ -57,33 +57,3 @@ class UriSerializer(ABC):
         @return:Returns the UUri in the transport serialized format.
         """
         pass
-
-    def build_resolved(self, long_uri: str, micro_uri: bytes) -> UUri:
-        """
-        Build a fully resolved UUri from the serialized long format and the serializes micro format.<br><br>
-        @param long_uri:UUri serialized as a Sting.
-        @param micro_uri:UUri serialized as a byte[].
-        @return:Returns a UUri object serialized from one of the forms.
-        """
-        if (not long_uri or long_uri.isspace()) and (not micro_uri or len(micro_uri) == 0):
-            return UUri()
-        from uprotocol.uri.serializer.longuriserializer import LongUriSerializer
-        from uprotocol.uri.serializer.microuriserializer import MicroUriSerializer
-        long_u_uri = LongUriSerializer().deserialize(long_uri)
-        micro_u_uri = MicroUriSerializer().deserialize(micro_uri)
-        u_authority = UAuthority()
-        u_authority.CopyFrom(micro_u_uri.authority)
-
-        u_authority.name = long_u_uri.authority.name
-
-        u_entity = UEntity()
-        u_entity.CopyFrom(micro_u_uri.entity)
-
-        u_entity.name = long_u_uri.entity.name
-
-        u_resource = UResource()
-        u_resource.CopyFrom(long_u_uri.resource)
-        u_resource.id = micro_u_uri.resource.id
-
-        u_uri = UUri(authority=u_authority, entity=u_entity, resource=u_resource)
-        return u_uri if UriValidator.is_resolved(u_uri) else None

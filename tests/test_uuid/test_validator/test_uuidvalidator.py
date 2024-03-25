@@ -102,7 +102,7 @@ class TestUuidValidator(unittest.TestCase):
 
         validator = UuidValidator.get_validator(uuid)
         self.assertIsNotNone(validator)
-        self.assertTrue(UUIDUtils.isUuidv6(uuid))
+        self.assertTrue(UUIDUtils.is_uuidv6(uuid))
         self.assertEqual(UCode.OK, validator.validate(uuid).code)
 
     def test_uuidv6_with_invalid_uuid(self):

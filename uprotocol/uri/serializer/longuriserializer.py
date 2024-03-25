@@ -55,7 +55,8 @@ class LongUriSerializer(UriSerializer):
         sb = []
 
         if uri.HasField('authority'):
-            sb.append(self.build_authority_part_of_uri(uri.authority))
+            sb.append("//")
+            sb.append(uri.authority.name)
 
         sb.append("/")
 
@@ -94,22 +95,6 @@ class LongUriSerializer(UriSerializer):
             sb += str(entity.version_major)
 
         return sb
-
-    @staticmethod
-    def build_authority_part_of_uri(authority: UAuthority) -> str:
-        """
-        Create the authority part of the uProtocol URI from an UAuthority object.<br><br>
-        @param authority:represents the deployment location of a specific  Software Entity in the Ultiverse.
-        @return:Returns the String representation of the  Authority in the uProtocol URI.
-        """
-
-        partial_uri = "//"
-        maybe_name = authority.name
-
-        if maybe_name is not None or maybe_name != "":
-            partial_uri += maybe_name
-
-        return partial_uri
 
     def deserialize(self, u_protocol_uri: str) -> UUri:
         """
