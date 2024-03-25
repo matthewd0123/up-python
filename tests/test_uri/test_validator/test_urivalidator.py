@@ -32,6 +32,7 @@ import unittest
 
 from uprotocol.uri.serializer.longuriserializer import LongUriSerializer
 from uprotocol.uri.validator.urivalidator import UriValidator
+from uprotocol.uri.factory.uresource_builder import UResourceBuilder
 from uprotocol.validation.validationresult import ValidationResult
 from uprotocol.proto.uri_pb2 import UUri, UEntity, UResource, UAuthority
 
@@ -376,6 +377,67 @@ class TestUriValidator(unittest.TestCase):
             json_data = json.load(json_file)
 
         return json_data
+
+    def test_is_rpc_method_with_uresource_and_no_uauthority(self):
+        self.assertFalse(UriValidator.is_rpc_method(UUri()))
+
+        uri = UUri(entity=UEntity(name="hartley"), resource=UResourceBuilder.from_id(0x8000))
+        self.assertFalse(UriValidator.is_rpc_method(uri))
+
+    def test_is_rpc_method_passing_null_for_uri(self):
+        self.assertFalse(UriValidator.is_rpc_method(None))
+
+    def test_is_rpc_method_passing_null_for_resource(self):
+        self.assertFalse(UriValidator.is_rpc_method(None))
+
+    def test_is_rpc_method_for_uresource_without_an_instance(self):
+        resource = UResource(name="rpc")
+        self.assertFalse(UriValidator.is_rpc_method(resource))
+
+    def test_is_rpc_method_for_uresource_with_an_empty_instance(self):
+        resource = UResource(name="rpc", instance="")
+        self.assertFalse(UriValidator.is_rpc_method(resource))
+
+    def test_is_rpc_method_for_uresource_with_id_that_is_less_than_min_topic(self):
+        resource = UResource(name="rpc", id=0)
+        self.assertTrue(UriValidator.is_rpc_method(resource))
+
+    def test_is_rpc_method_for_uresource_with_id_that_is_greater_than_min_topic(self):
+        resource = UResource(name="rpc", id=0x8000)
+        self.assertFalse(UriValidator.is_rpc_method(resource))
+
+    def test_is_empty_with_null_uri(self):
+        self.assertTrue(UriValidator.is_empty(None))
+
+    def test_is_resolved_when_uri_is_long_form_only(self):
+        uri = UUri(entity=UEntity(name="hartley", version_major=23),
+                   resource=UResource(name="rpc", instance="echo"))
+        self.assertFalse(UriValidator.is_resolved(uri))
+
+    def test_is_local_when_authority_is_null(self):
+        self.assertFalse(UriValidator.is_local(None))
+
+    def test_is_remote_when_authority_is_null(self):
+        self.assertFalse(UriValidator.is_remote(None))
+
+    # def test_is_remote_when_authority_does_not_have_a_name_but_does_have_a_number_set(self):
+    #     authority = UAuthority(id=b"hello Jello")
+    #     self.assertTrue(UriValidator.is_remote(authority))
+    #     self.assertFalse(authority.name is not None)
+    #     self.assertEqual(authority.number_case(), UAuthority.NumberCase.ID)
+
+    # def test_is_remote_when_authority_has_name_and_number_set(self):
+    #     authority = UAuthority(name="vcu.veh.gm.com", id=b"hello Jello")
+    #     self.assertTrue(UriValidator.is_remote(authority))
+    #     self.assertTrue(authority.name is not None)
+    #     self.assertEqual(authority.number_case(), UAuthority.NumberCase.ID)
+
+    # def test_is_remote_when_authority_has_name_and_number_is_not_set(self):
+    #     authority = UAuthority(name="vcu.veh.gm.com")
+    #     self.assertTrue(UriValidator.is_remote(authority))
+    #     self.assertTrue(authority.name is not None)
+    #     self.assertEqual(authority.number_case(), UAuthority.NumberCase.NUMBER_NOT_SET)
+
 
 
 if __name__ == '__main__':

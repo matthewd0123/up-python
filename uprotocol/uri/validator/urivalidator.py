@@ -32,6 +32,7 @@ from uprotocol.proto.uri_pb2 import UResource
 from uprotocol.proto.uri_pb2 import UUri
 from uprotocol.uri.factory.uresource_builder import UResourceBuilder
 from uprotocol.validation.validationresult import ValidationResult
+from typing import Union
 
 
 class UriValidator:
@@ -102,7 +103,7 @@ class UriValidator:
         return uri is None or uri == UUri()
 
     @multimethod
-    def is_rpc_method(uri: UUri) -> bool:
+    def is_rpc_method(uri: Union[UUri, None]) -> bool:
         """
         Returns true if URI is of type RPC. A UUri is of type RPC if it contains the word rpc in the resource name 
         and has an instance name and/or the id is less than MIN_TOPIC_ID.
@@ -112,7 +113,7 @@ class UriValidator:
         return uri is not None and UriValidator.is_rpc_method(uri.resource)
 
     @multimethod
-    def is_rpc_method(resource: UResource) -> bool:
+    def is_rpc_method(resource: Union[UResource, None]) -> bool:
         """
         Returns true if Uresource is of type RPC.
         @param resource: UResource to check if it is of type RPC method
@@ -182,7 +183,7 @@ class UriValidator:
         @param authority UAuthority to check if it is local or not
         @return Returns true if UAuthority is local meaning the Authority is not populated with name, ip and id
         '''
-        return (authority is None) or (authority == UAuthority())
+        return (authority is not None) and (authority == UAuthority())
 
     @staticmethod
     def is_remote(authority: UAuthority) -> bool:

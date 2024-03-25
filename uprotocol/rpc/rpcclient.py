@@ -30,7 +30,7 @@ from concurrent.futures import Future
 
 from uprotocol.proto.uri_pb2 import UUri
 from uprotocol.proto.upayload_pb2 import UPayload
-from uprotocol.rpc.calloptions import CallOptions
+from uprotocol.proto.uattributes_pb2 import CallOptions
 
 
 class RpcClient(ABC):

@@ -24,7 +24,7 @@
 
 # -------------------------------------------------------------------------
 
-import typing
+from typing import Optional, Type
 
 from uprotocol.proto.upayload_pb2 import UPayload, UPayloadFormat
 from google.protobuf.any_pb2 import Any
@@ -32,6 +32,7 @@ from google.protobuf.message import Message
 
 class UPayloadBuilder:
     
+    @staticmethod
     def pack_to_any(message: Message) -> UPayload:
         '''
         Build a uPayload from google.protobuf.Message by stuffing the message into an Any. 
@@ -43,6 +44,7 @@ class UPayloadBuilder:
         return UPayload(format=UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY,
                            value=any_message.SerializeToString())
     
+    @staticmethod
     def pack(message: Message) -> UPayload:
         '''
         Build a uPayload from google.protobuf.Message using protobuf PayloadFormat.
@@ -52,22 +54,22 @@ class UPayloadBuilder:
         return UPayload(format=UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF,
                            value=message.SerializeToString())
 
-    def unpack(payload: UPayload, clazz: typing.Type) -> typing.Type:
+    @staticmethod
+    def unpack(payload: UPayload, clazz: Type[Message]) -> Optional[Message]:
         '''
         Unpack a uPayload into a google.protobuf.Message.
         @param payload the payload to unpack
         @param clazz the class of the message to unpack
         @return the unpacked message
         '''
-        if payload is None or payload.hasValue():
+        if payload is None or payload.value is None:
             return None
         try:
             if payload.format == UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF:
                 message = clazz()
                 message.ParseFromString(payload.value)
                 return message
-            elif payload.format == UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY or\
-                payload.format == UPayloadFormat.UPAYLOAD_FORMAT_UNSPECIFIED:
+            elif payload.format == UPayloadFormat.UPAYLOAD_FORMAT_PROTOBUF_WRAPPED_IN_ANY:
                 any_message = Any()
                 any_message.ParseFromString(payload.value)
                 message = clazz()

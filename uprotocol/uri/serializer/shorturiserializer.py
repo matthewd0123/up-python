@@ -93,7 +93,7 @@ class ShortUriSerializer(UriSerializer):
         
         return "".join(sb)
 
-    def deserialize(uprotocol_uri):
+    def deserialize(self, uprotocol_uri):
         """
         Deserialize a String into a UUri object.
         @param uProtocolUri A short format uProtocol URI.
@@ -102,7 +102,7 @@ class ShortUriSerializer(UriSerializer):
         if uprotocol_uri is None or uprotocol_uri.strip() == "":
             return UUri()
         
-        uri = uprotocol_uri[uprotocol_uri.index(":")+1:] if ":" in uprotocol_uri else uprotocol_uri.replce("\\", "/")
+        uri = uprotocol_uri[uprotocol_uri.index(":")+1:] if ":" in uprotocol_uri else uprotocol_uri.replace("\\", "/")
 
         is_local = not uprotocol_uri.startswith("//")
 

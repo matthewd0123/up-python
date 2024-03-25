@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import descriptor_pb2 as google_dot_protobuf_dot_descriptor__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x17uprotocol_options.proto\x12\tuprotocol\x1a google/protobuf/descriptor.proto:/\n\x04name\x12\x1f.google.protobuf.ServiceOptions\x18\xb4\x87\x03 \x01(\t:8\n\rversion_major\x12\x1f.google.protobuf.ServiceOptions\x18\xb5\x87\x03 \x01(\r:8\n\rversion_minor\x12\x1f.google.protobuf.ServiceOptions\x18\xb6\x87\x03 \x01(\r:-\n\x02id\x12\x1f.google.protobuf.ServiceOptions\x18\xb7\x87\x03 \x01(\r:;\n\x10permission_level\x12\x1f.google.protobuf.ServiceOptions\x18\xb8\x87\x03 \x01(\r:6\n\tmethod_id\x12\x1e.google.protobuf.MethodOptions\x18\x98\x88\x03 \x01(\r\x88\x01\x01:A\n\x17method_permission_level\x12\x1e.google.protobuf.MethodOptions\x18\x99\x88\x03 \x01(\r:;\n\rbase_topic_id\x12\x1f.google.protobuf.MessageOptions\x18\xfc\x88\x03 \x01(\r\x88\x01\x01:A\n\x16topic_permission_level\x12\x1f.google.protobuf.MessageOptions\x18\xfd\x88\x03 \x01(\r:>\n\x12resource_name_mask\x12\x1d.google.protobuf.FieldOptions\x18\xe0\x89\x03 \x01(\t\x88\x01\x01:9\n\tmime_type\x12!.google.protobuf.EnumValueOptions\x18\xc4\x8a\x03 \x01(\t\x88\x01\x01:7\n\x07\x63\x65_name\x12!.google.protobuf.EnumValueOptions\x18\xc5\x8a\x03 \x01(\t\x88\x01\x01\x42\x19\n\x15org.eclipse.uprotocolP\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x17uprotocol_options.proto\x12\tuprotocol\x1a google/protobuf/descriptor.proto\":\n\rUServiceTopic\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t:/\n\x04name\x12\x1f.google.protobuf.ServiceOptions\x18\x9c\x8f\x03 \x01(\t:8\n\rversion_major\x12\x1f.google.protobuf.ServiceOptions\x18\x9d\x8f\x03 \x01(\r:8\n\rversion_minor\x12\x1f.google.protobuf.ServiceOptions\x18\x9e\x8f\x03 \x01(\r:-\n\x02id\x12\x1f.google.protobuf.ServiceOptions\x18\x9f\x8f\x03 \x01(\r:;\n\x10permission_level\x12\x1f.google.protobuf.ServiceOptions\x18\xa0\x8f\x03 \x01(\r:R\n\rpublish_topic\x12\x1f.google.protobuf.ServiceOptions\x18\xa1\x8f\x03 \x03(\x0b\x32\x18.uprotocol.UServiceTopic:W\n\x12notification_topic\x12\x1f.google.protobuf.ServiceOptions\x18\xa2\x8f\x03 \x03(\x0b\x32\x18.uprotocol.UServiceTopic:6\n\tmethod_id\x12\x1e.google.protobuf.MethodOptions\x18\x80\x90\x03 \x01(\r\x88\x01\x01:A\n\x17method_permission_level\x12\x1e.google.protobuf.MethodOptions\x18\x81\x90\x03 \x01(\r:;\n\rbase_topic_id\x12\x1f.google.protobuf.MessageOptions\x18\xe4\x90\x03 \x01(\r\x88\x01\x01:A\n\x16topic_permission_level\x12\x1f.google.protobuf.MessageOptions\x18\xe5\x90\x03 \x01(\r:>\n\x12resource_name_mask\x12\x1d.google.protobuf.FieldOptions\x18\xc8\x91\x03 \x01(\t\x88\x01\x01:9\n\tmime_type\x12!.google.protobuf.EnumValueOptions\x18\xac\x92\x03 \x01(\t\x88\x01\x01:7\n\x07\x63\x65_name\x12!.google.protobuf.EnumValueOptions\x18\xad\x92\x03 \x01(\t\x88\x01\x01\x42\x19\n\x15org.eclipse.uprotocolP\x01\x62\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'uprotocol_options_pb2', globals())
@@ -24,6 +24,8 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   google_dot_protobuf_dot_descriptor__pb2.ServiceOptions.RegisterExtension(version_minor)
   google_dot_protobuf_dot_descriptor__pb2.ServiceOptions.RegisterExtension(id)
   google_dot_protobuf_dot_descriptor__pb2.ServiceOptions.RegisterExtension(permission_level)
+  google_dot_protobuf_dot_descriptor__pb2.ServiceOptions.RegisterExtension(publish_topic)
+  google_dot_protobuf_dot_descriptor__pb2.ServiceOptions.RegisterExtension(notification_topic)
   google_dot_protobuf_dot_descriptor__pb2.MethodOptions.RegisterExtension(method_id)
   google_dot_protobuf_dot_descriptor__pb2.MethodOptions.RegisterExtension(method_permission_level)
   google_dot_protobuf_dot_descriptor__pb2.MessageOptions.RegisterExtension(base_topic_id)
@@ -34,4 +36,6 @@ if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   DESCRIPTOR._serialized_options = b'\n\025org.eclipse.uprotocolP\001'
+  _USERVICETOPIC._serialized_start=72
+  _USERVICETOPIC._serialized_end=130
 # @@protoc_insertion_point(module_scope)

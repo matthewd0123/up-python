@@ -125,7 +125,7 @@ class MicroUriSerializer(UriSerializer):
             try:
                 if uri.authority.HasField("ip"):
                     os.write(uri.authority.ip)
-                elif uri.authority.HasField("id"):
+                else:
                     os.write(uri.authority.id)
             except Exception as e:
                 return b''

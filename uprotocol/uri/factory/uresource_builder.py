@@ -26,6 +26,7 @@
 
 
 from unicodedata import name
+import re
 from uprotocol.proto.uri_pb2 import UResource
 
 
@@ -71,12 +72,12 @@ class UResourceBuilder:
         """
         if topic is None:
             raise ValueError("topic cannot be None.")
-        name_and_instance_parts = topic.name.split("\\.")
+        name_and_instance_parts = re.split(r'[\\.]', topic.name)
         resource_name = name_and_instance_parts[0]
         resource_instance = None if len(name_and_instance_parts) <= 1 else name_and_instance_parts[1]
 
         resource = UResource(name=resource_name, id=topic.id, message=topic.message)
         if resource_instance is not None:
-            resource.instance(resource_instance)
+            resource.instance = resource_instance
         
         return resource

@@ -34,7 +34,7 @@ from git import Repo
 
 REPO_URL = "https://github.com/eclipse-uprotocol/up-core-api.git"
 PROTO_REPO_DIR = os.path.abspath("../target")
-TAG_NAME = "uprotocol-core-api-1.5.6"
+TAG_NAME = "uprotocol-core-api-1.5.7"
 PROTO_OUTPUT_DIR = os.path.abspath("../uprotocol/proto")
 
 

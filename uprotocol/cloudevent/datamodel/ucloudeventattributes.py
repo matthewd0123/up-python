@@ -102,7 +102,7 @@ class UCloudEventAttributes:
         Traceparent of the event.
         @return: Returns an optional traceparent attribute.
         """
-        return self.traceparent
+        return self.traceparent if self.traceparent and self.traceparent.strip() else None
 
     def __eq__(self, other):
         if self is other:
