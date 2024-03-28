@@ -26,6 +26,7 @@
 
 import re
 import socket
+from typing import List
 
 from uprotocol.proto.uri_pb2 import UUri, UAuthority, UEntity
 from uprotocol.proto.uri_pb2 import UResource
@@ -35,49 +36,64 @@ from uprotocol.uri.serializer.uriserializer import UriSerializer
 from uprotocol.uri.validator.urivalidator import UriValidator
 from uprotocol.uri.factory.uresource_builder import UResourceBuilder
 
+
+def convert_packed_ipaddr_to_string(packed_ipaddr: bytes):
+    for address_type in [socket.AF_INET, socket.AF_INET6]:
+        try:
+            '''
+            socket.inet_ntop(): 
+            Convert a packed IP address (a bytes-like object of some number of bytes) 
+            to its standard, family-specific string representation (for example, '7.10.0.5' or '5aef:2b::8')
+            '''
+            return socket.inet_ntop(address_type, packed_ipaddr)
+        except ValueError:
+            pass
+    
+    raise Exception("Could not find correct address family to unpack ip address from bytes to str")
+
+
 class ShortUriSerializer(UriSerializer):
     """
     UUri Serializer that serializes a UUri to a Short format string per
     https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc
     """
 
-    def serialize(self, uri: UUri) -> bytes:
+    def serialize(self, uri: UUri) -> str:
         if uri is None or UriValidator.is_empty(uri):
             return ""
-    
-        sb = []
+        string_builder: List[str] = []
 
-        if uri.authority is not None:
-            authority = uri.authority
+        if uri.HasField("authority"):
+            authority: UAuthority = uri.authority
             if uri.authority.HasField('ip'):
                 try:
-                    sb.append("/")
-                    sb.append(socket.inet_ntoa(authority.ip))
+                    string_builder.append("//")
+                    string_builder.append(convert_packed_ipaddr_to_string(authority.ip))
                 except:
+                    print("in exception")
                     return ""
             elif uri.authority.HasField('id'):
-                sb.append("//")
-                sb.append(authority.id.decode("utf-8"))
+                string_builder.append("//")
+                string_builder.append(authority.id.decode("utf-8"))
             else:
                 return ""
         
-        sb.append("/")
-        sb.append(ShortUriSerializer.build_software_entity_part_of_uri(uri.entity))
-        sb.append(ShortUriSerializer.build_resource_part_of_uri(uri))
+        string_builder.append("/")
+        string_builder.append(self.build_software_entity_part_of_uri(uri.entity))
+        string_builder.append(self.build_resource_part_of_uri(uri))
 
-        return re.sub('/+$', '', "".join(sb))
+        return re.sub('/+$', '', "".join(string_builder))
     
     @staticmethod
-    def build_resource_part_of_uri(uri):
-        if uri.resource is None:
+    def build_resource_part_of_uri(uri: UUri):
+        if not uri.HasField("resource"):
             return ""
+        resource: UResource = uri.resource
         
-        resource = uri.resource
+        string_builder: List[str] = ["/"]
+        string_builder.append(str(resource.id))
 
-        sb = []
-        sb.append(resource.id)
-
-        return "".join(sb)
+        return "".join(string_builder)
 
     @staticmethod
     def build_software_entity_part_of_uri(entity):
@@ -85,15 +101,15 @@ class ShortUriSerializer(UriSerializer):
         Create the service part of the uProtocol URI from an  software entity object.
         @param use  Software Entity representing a service or an application.
         """
-        sb = []
-        sb.append(entity.id)
-        sb.append("/")
+        string_builder: List[str] = []
+        string_builder.append(str(entity.id))
+        string_builder.append("/")
         if entity.version_major > 0:
-            sb.append(entity.version_major)
+            string_builder.append(str(entity.version_major))
         
-        return "".join(sb)
+        return "".join(string_builder)
 
-    def deserialize(uprotocol_uri):
+    def deserialize(uprotocol_uri: str) -> UUri:
         """
         Deserialize a String into a UUri object.
         @param uProtocolUri A short format uProtocol URI.
