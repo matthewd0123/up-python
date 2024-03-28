@@ -29,7 +29,7 @@ import unittest
 from concurrent.futures import Future
 from google.protobuf.any_pb2 import Any
 from google.protobuf.wrappers_pb2 import Int32Value
-from uprotocol.rpc.calloptions import CallOptions
+from uprotocol.proto.uattributes_pb2 import CallOptions
 
 from uprotocol.cloudevent.cloudevents_pb2 import CloudEvent
 from uprotocol.proto.uattributes_pb2 import UPriority
@@ -66,7 +66,7 @@ def build_topic():
 
 
 def build_calloptions():
-    return CallOptions()
+    return CallOptions(ttl=1000)
 
 
 class ReturnsNumber3(RpcClient):
@@ -133,6 +133,11 @@ class ThatReturnsTheWrongProto(RpcClient):
         future.set_result(UMessage(payload=data))
         return future
 
+class WithNullMessage(RpcClient):
+    def invoke_method(self, topic: UUri, payload: UPayload, options: CallOptions):
+        future = Future()
+        future.set_result(UMessage())
+        return future
 
 class WithNullInPayload(RpcClient):
     def invoke_method(self, topic: UUri, payload: UPayload, options: CallOptions):
@@ -203,6 +208,15 @@ class TestRpc(unittest.TestCase):
         status = UStatus(code=UCode.UNKNOWN, message="Boom")
         self.assertEqual(status, mapped.failureValue())
 
+    def test_map_response_with_payload_is_null(self):
+        rpc_response = RpcMapper.map_response_to_result(
+            WithNullInPayload().invoke_method(build_topic(), None, build_calloptions()),
+            UStatus)
+        mapped = rpc_response.map(lambda x: x.value + 5)
+        self.assertTrue(rpc_response.isFailure())
+        self.assertEqual(UCode.UNKNOWN, mapped.failureValue().code)
+        self.assertEqual("Server returned a null payload. Expected UStatus", mapped.failureValue().message)
+
     def test_success_invoke_method_happy_flow_using_mapResponseToRpcResponse(self):
         rpc_response = RpcMapper.map_response_to_result(
             HappyPath().invoke_method(build_topic(), build_upayload(), build_calloptions()),
@@ -249,4 +263,11 @@ class TestRpc(unittest.TestCase):
             CloudEvent)
         exception = RuntimeError(
             "Unknown payload type [type.googleapis.com/uprotocol.v1.UStatus]. Expected [CloudEvent]")
+        self.assertEqual(str(exception), str(rpc_response.exception()))
+
+    def test_map_response_when_response_message_is_null(self):
+        rpc_response = RpcMapper.map_response(
+            WithNullMessage().invoke_method(build_topic(), build_upayload(), build_calloptions()),
+            CloudEvent)
+        exception = RuntimeError("Server returned a null payload. Expected CloudEvent")
         self.assertEqual(str(exception), str(rpc_response.exception()))

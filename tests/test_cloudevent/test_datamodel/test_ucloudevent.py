@@ -123,7 +123,7 @@ class TestUCloudEvent(unittest.TestCase):
 
     def test_extract_ttl_from_cloudevent_when_ttl_exists(self):
         cloud_event = build_cloud_event_for_test()
-        self.assertEqual(3, UCloudEvent.get_ttl(cloud_event))
+        self.assertEqual(UCode.INVALID_ARGUMENT, UCloudEvent.get_ttl(cloud_event))
 
     def test_extract_ttl_from_cloudevent_when_ttl_does_not_exists(self):
         cloud_event = build_cloud_event_for_test()
@@ -142,7 +142,7 @@ class TestUCloudEvent(unittest.TestCase):
     def test_cloudevent_has_platform_error_when_platform_error_exists(self):
         cloud_event = build_cloud_event_for_test()
         cloud_event.__setitem__("commstatus", UCode.ABORTED)
-        self.assertEqual(10, UCloudEvent.get_communication_status(cloud_event))
+        self.assertEqual(UCode.ABORTED, UCloudEvent.get_communication_status(cloud_event))
 
     def test_cloudevent_has_platform_error_when_platform_error_does_not_exist(self):
         cloud_event = build_cloud_event_for_test()
@@ -297,3 +297,8 @@ class TestUCloudEvent(unittest.TestCase):
         cloud_event1 = UCloudEvent.fromMessage(result)
         self.assertEqual(UCloudEvent.get_priority(cloud_event1),UPriority.Name(result.attributes.priority))
 
+
+    def test_from_message_with_null_message(self):
+        with self.assertRaises(ValueError) as context:
+            UCloudEvent.fromMessage(None)
+            self.assertTrue('message cannot be null.' in context.exception)

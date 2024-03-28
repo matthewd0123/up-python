@@ -110,7 +110,7 @@ class UAttributesBuilder:
                                   ).withTtl(ttl).withSink(sink)
 
     @multimethod
-    def response(source: UUri,  sink: UUri, priority: UPriority, reqid: UUID):
+    def response(source: UUri,  sink: UUri, priority: int, reqid: UUID):
         """
         Construct a UAttributesBuilder for a response message.
         @param source   Source address of the message.

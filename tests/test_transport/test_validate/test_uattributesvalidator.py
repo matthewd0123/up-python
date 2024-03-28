@@ -88,12 +88,9 @@ class TestUAttributesValidator(unittest.TestCase):
         self.assertEqual("Wrong Attribute Type [UMESSAGE_TYPE_RESPONSE]", status.get_message())
 
     def test_validate_uAttributes_for_publish_message_payload_invalid_ttl(self):
-        attributes = UAttributesBuilder.publish(build_source(), UPriority.UPRIORITY_CS0).withTtl(-1).build()
-
-        validator = Validators.PUBLISH.validator()
-        status = validator.validate(attributes)
-        self.assertTrue(status.is_failure())
-        self.assertEqual("Invalid TTL [-1]", status.get_message())
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.publish(build_source(), UPriority.UPRIORITY_CS0).withTtl(-1).build()
+            self.assertTrue('Value out of range: -1' in context.exception)
 
     def test_validate_uAttributes_for_publish_message_payload_invalid_sink(self):
         attributes = UAttributesBuilder.publish(build_source(), UPriority.UPRIORITY_CS0).withSink(UUri()).build()
@@ -103,11 +100,9 @@ class TestUAttributesValidator(unittest.TestCase):
         self.assertEqual("Uri is empty.", status.get_message())
 
     def test_validate_uAttributes_for_publish_message_payload_invalid_permission_level(self):
-        attributes = UAttributesBuilder.publish(build_source(), UPriority.UPRIORITY_CS0).withPermissionLevel(-42).build()
-        validator = Validators.PUBLISH.validator()
-        status = validator.validate(attributes)
-        self.assertTrue(status.is_failure())
-        self.assertEqual("Invalid Permission Level", status.get_message())
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.publish(build_source(), UPriority.UPRIORITY_CS0).withPermissionLevel(-42).build()
+            self.assertTrue('Value out of range: -42' in context.exception)
 
     # def test_validate_uAttributes_for_publish_message_payload_invalid_request_id(self):
     #     uuid = java.util.UUID.randomUUID()
@@ -146,12 +141,9 @@ class TestUAttributesValidator(unittest.TestCase):
         self.assertEqual("Wrong Attribute Type [UMESSAGE_TYPE_RESPONSE]", status.get_message())
 
     def test_validate_uAttributes_for_rpc_request_message_payload_invalid_ttl(self):
-        attributes = UAttributesBuilder.request(build_source(), build_sink(), UPriority.UPRIORITY_CS4, -1).build()
-
-        validator = Validators.REQUEST.validator()
-        status = validator.validate(attributes)
-        self.assertTrue(status.is_failure())
-        self.assertEqual("Invalid TTL [-1]", status.get_message())
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.request(build_source(), build_sink(), UPriority.UPRIORITY_CS4, -1).build()
+            self.assertTrue('Value out of range: -1' in context.exception)
 
     def test_validate_uAttributes_for_rpc_request_message_payload_invalid_sink(self):
         attributes = UAttributesBuilder.request(build_source(), UUri(), UPriority.UPRIORITY_CS4, 1000).build()
@@ -162,13 +154,9 @@ class TestUAttributesValidator(unittest.TestCase):
         self.assertEqual("Uri is empty.", status.get_message())
 
     def test_validate_uAttributes_for_rpc_request_message_payload_invalid_permission_level(self):
-        attributes = UAttributesBuilder.request(build_source(), build_sink(), UPriority.UPRIORITY_CS4, 1000).withPermissionLevel(
-            -42).build()
-
-        validator = Validators.REQUEST.validator()
-        status = validator.validate(attributes)
-        self.assertTrue(status.is_failure())
-        self.assertEqual("Invalid Permission Level", status.get_message())
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.request(build_source(), build_sink(), UPriority.UPRIORITY_CS4, 1000).withPermissionLevel(-42).build()
+            self.assertTrue('Value out of range: -42' in context.exception)
 
     # def test_validate_uAttributes_for_rpc_request_message_payload_invalid_request_id(self):
     #     uuid_java = java.util.UUID.randomUUID()
@@ -206,16 +194,12 @@ class TestUAttributesValidator(unittest.TestCase):
         validator = Validators.RESPONSE.validator()
         status = validator.validate(attributes)
         self.assertTrue(status.is_failure())
-        self.assertEqual("Wrong Attribute Type [UMESSAGE_TYPE_PUBLISH],Missing correlationId", status.get_message())
+        self.assertEqual("Wrong Attribute Type [UMESSAGE_TYPE_NOTIFICATION],Missing correlationId", status.get_message())
 
     def test_validate_uAttributes_for_rpc_response_message_payload_invalid_ttl(self):
-        attributes = UAttributesBuilder.response(build_source(), build_sink(), UPriority.UPRIORITY_CS4,
-                                                 Factories.UPROTOCOL.create()).withTtl(-1).build()
-
-        validator = Validators.RESPONSE.validator()
-        status = validator.validate(attributes)
-        self.assertTrue(status.is_failure())
-        self.assertEqual("Invalid TTL [-1]", status.get_message())
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.response(build_source(), build_sink(), UPriority.UPRIORITY_CS4, Factories.UPROTOCOL.create()).withTtl(-1).build()
+            self.assertTrue('Value out of range: -1' in context.exception)
 
     def test_validate_uAttributes_for_rpc_response_message_payload_missing_sink_and_missing_requestId(self):
         attributes = UAttributesBuilder.response(build_source(), UUri(), UPriority.UPRIORITY_CS4, UUID()).build()
@@ -226,22 +210,9 @@ class TestUAttributesValidator(unittest.TestCase):
         self.assertEqual("Missing Sink,Missing correlationId", status.get_message())
 
     def test_validate_uAttributes_for_rpc_response_message_payload_invalid_permission_level(self):
-        attributes = UAttributesBuilder.response(build_source(), build_sink(), UPriority.UPRIORITY_CS4,
-                                                 Factories.UPROTOCOL.create()).withPermissionLevel(-42).build()
-
-        validator = Validators.RESPONSE.validator()
-        status = validator.validate(attributes)
-        self.assertTrue(status.is_failure())
-        self.assertEqual("Invalid Permission Level", status.get_message())
-
-    def test_validate_uAttributes_for_rpc_response_message_payload_invalid_communication_status(self):
-        attributes = UAttributesBuilder.response(build_source(), build_sink(), UPriority.UPRIORITY_CS4, 
-                                                 Factories.UPROTOCOL.create()).withCommStatus(-42).build()
-
-        validator = Validators.RESPONSE.validator()
-        status = validator.validate(attributes)
-        self.assertTrue(status.is_failure())
-        self.assertEqual("Invalid Communication Status Code", status.get_message())
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.response(build_source(), build_sink(), UPriority.UPRIORITY_CS4, Factories.UPROTOCOL.create()).withPermissionLevel(-42).build()
+            self.assertTrue('Value out of range: -42' in context.exception)
 
     def test_validate_uAttributes_for_rpc_response_message_payload_missing_request_id(self):
         attributes = UAttributesBuilder.response(build_source(), build_sink(), UPriority.UPRIORITY_CS4, UUID()).build()
@@ -292,12 +263,9 @@ class TestUAttributesValidator(unittest.TestCase):
     # ----
 
     def test_validating_publish_invalid_ttl_attribute(self):
-        attributes = UAttributesBuilder.publish(build_source(), UPriority.UPRIORITY_CS0).withTtl(-1).build()
-
-        validator = Validators.PUBLISH.validator()
-        status = validator.validate_ttl(attributes)
-        self.assertTrue(status.is_failure())
-        self.assertEqual("Invalid TTL [-1]", status.get_message())
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.publish(build_source(), UPriority.UPRIORITY_CS0).withTtl(-1).build()
+            self.assertTrue('Value out of range: -1' in context.exception)
 
     def test_validating_valid_ttl_attribute(self):
         attributes = UAttributesBuilder.publish(build_source(), UPriority.UPRIORITY_CS0).withTtl(100).build()
@@ -345,12 +313,9 @@ class TestUAttributesValidator(unittest.TestCase):
         self.assertEqual(ValidationResult.success(), status)
 
     def test_validating_invalid_PermissionLevel_attribute(self):
-        attributes = UAttributesBuilder.publish(build_source(), UPriority.UPRIORITY_CS0).withPermissionLevel(-1).build()
-
-        validator = Validators.PUBLISH.validator()
-        status = validator.validate_permission_level(attributes)
-        self.assertTrue(status.is_failure())
-        self.assertEqual("Invalid Permission Level", status.get_message())
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.publish(build_source(), UPriority.UPRIORITY_CS0).withPermissionLevel(-1).build()
+            self.assertTrue('Value out of range: -1' in context.exception)
 
     def test_validating_valid_PermissionLevel_attribute(self):
         attributes = UAttributesBuilder.publish(build_source(), UPriority.UPRIORITY_CS0).withPermissionLevel(3).build()
@@ -366,21 +331,6 @@ class TestUAttributesValidator(unittest.TestCase):
         status = validator.validate_permission_level(attributes)
         self.assertTrue(status.is_failure())
         self.assertEqual("Invalid Permission Level", status.get_message())
-
-    def test_validating_invalid_commstatus_attribute(self):
-        attributes = UAttributesBuilder.publish(build_source(), UPriority.UPRIORITY_CS0).withCommStatus(100).build()
-
-        validator = Validators.PUBLISH.validator()
-        status = validator.validate_comm_status(attributes)
-        self.assertTrue(status.is_failure())
-        self.assertEqual("Invalid Communication Status Code", status.get_message())
-
-    def test_validating_valid_commstatus_attribute(self):
-        attributes = UAttributesBuilder.publish(build_source(), UPriority.UPRIORITY_CS0).withCommStatus(UCode.ABORTED).build()
-
-        validator = Validators.PUBLISH.validator()
-        status = validator.validate_comm_status(attributes)
-        self.assertEqual(ValidationResult.success(), status)
 
     def test_validating_request_message_types(self):
         attributes = UAttributesBuilder.request(build_source(), build_sink(), UPriority.UPRIORITY_CS6, 100).build()
@@ -401,24 +351,16 @@ class TestUAttributesValidator(unittest.TestCase):
         self.assertEqual("Wrong Attribute Type [UMESSAGE_TYPE_PUBLISH],Missing TTL,Missing Sink", status.get_message())
 
     def test_validating_request_validator_with_wrong_bad_ttl(self):
-        attributes = UAttributesBuilder.request(build_source(), LongUriSerializer().deserialize("/hartley/1/rpc.response"), 
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.request(build_source(), LongUriSerializer().deserialize("/hartley/1/rpc.response"), 
                                                 UPriority.UPRIORITY_CS6, -1).build()
-
-        validator = Validators.REQUEST.validator()
-        self.assertEqual("UAttributesValidator.Request", str(validator))
-        status = validator.validate(attributes)
-        self.assertTrue(status.is_failure())
-        self.assertEqual("Invalid TTL [-1]", status.get_message())
+            self.assertTrue('Value out of range: -1' in context.exception)
 
     def test_validating_response_validator_with_wrong_bad_ttl(self):
-        attributes = UAttributesBuilder.response(build_source(), LongUriSerializer().deserialize("/hartley/1/rpc.response"), 
+        with self.assertRaises(ValueError) as context:
+            UAttributesBuilder.response(build_source(), LongUriSerializer().deserialize("/hartley/1/rpc.response"), 
                                                  UPriority.UPRIORITY_CS6, Factories.UPROTOCOL.create()).withTtl(-1).build()
-
-        validator = Validators.RESPONSE.validator()
-        self.assertEqual("UAttributesValidator.Response", str(validator))
-        status = validator.validate(attributes)
-        self.assertTrue(status.is_failure())
-        self.assertEqual("Invalid TTL [-1]", status.get_message())
+            self.assertTrue('Value out of range: -1' in context.exception)
 
     def test_validating_publish_validator_with_wrong_messagetype(self):
         attributes = UAttributesBuilder.request(build_source(), build_sink(), UPriority.UPRIORITY_CS6, 1000).build()

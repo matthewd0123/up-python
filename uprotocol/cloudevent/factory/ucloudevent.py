@@ -376,7 +376,7 @@ class UCloudEvent:
         @return returns the string representation of the UMessageType
         """
         return {UMessageType.UMESSAGE_TYPE_PUBLISH: "pub.v1", UMessageType.UMESSAGE_TYPE_REQUEST: "req.v1",
-                UMessageType.UMESSAGE_TYPE_RESPONSE: "res.v1"}.get(type, "")
+                UMessageType.UMESSAGE_TYPE_RESPONSE: "res.v1", UMessageType.UMESSAGE_TYPE_NOTIFICATION: "not.v1"}.get(type, "")
 
     @staticmethod
     def get_message_type(ce_type):

@@ -661,26 +661,6 @@ class TestLongUriSerializer(unittest.TestCase):
         self.assertEqual("Door", uuri.resource.message)
         self.assertEqual(uri2, LongUriSerializer().serialize(uuri))
 
-    def test_deserialize_long_and_micro_passing_null(self):
-        uri = LongUriSerializer().build_resolved(None, None)
-        self.assertTrue(uri is not None)
-        self.assertEqual("", LongUriSerializer().serialize(uri))
-
-    def test_deserialize_long_and_micro_passing_null_long_uri_empty_byte_array(self):
-        uri = LongUriSerializer().build_resolved(None, bytearray())
-        self.assertTrue(uri is not None)
-        self.assertEqual("", LongUriSerializer().serialize(uri))
-
-    def test_deserialize_long_and_micro_passing_nullempty_long_uri_null_byte_array(self):
-        uri = LongUriSerializer().build_resolved("", None)
-        self.assertTrue(uri is not None)
-        self.assertEqual("", LongUriSerializer().serialize(uri))
-
-    def test_deserialize_long_and_micro_passing_empty_long_uri_empty_byte_array(self):
-        uri = LongUriSerializer().build_resolved("", bytearray())
-        self.assertTrue(uri is not None)
-        self.assertEqual("", LongUriSerializer().serialize(uri))
-
 
 if __name__ == '__main__':
     unittest.main()

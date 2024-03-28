@@ -277,6 +277,16 @@ class TestCloudEventValidator(unittest.TestCase):
         result = validator.validate(cloud_event)
         self.assertEqual("Invalid Publish type CloudEvent source [/]. Uri is empty.", result.get_message())
 
+    def test_notification_type_cloudevent_is_not_valid_when_source_is_empty(self):
+        uuid = Factories.UPROTOCOL.create()
+        str_uuid = LongUuidSerializer.instance().serialize(uuid)
+        cloud_event = build_base_notification_cloud_event_for_test()
+        cloud_event.__setitem__("id", str_uuid)
+        cloud_event.__setitem__("source", "/")
+        validator = Validators.NOTIFICATION.validator()
+        result = validator.validate(cloud_event)
+        self.assertEqual("Invalid Notification type CloudEvent source [/], Uri is empty.,Invalid CloudEvent sink. Notification CloudEvent sink must be an  uri.", result.get_message())
+
     def test_publish_type_cloudevent_is_not_valid_when_source_is_missing_authority(self):
         cloud_event = build_base_publish_cloud_event_for_test()
         cloud_event.__setitem__("id", "testme")
@@ -304,9 +314,9 @@ class TestCloudEventValidator(unittest.TestCase):
     def test_notification_type_cloudevent_is_valid_when_everything_is_valid(self):
         uuid = Factories.UPROTOCOL.create()
         str_uuid = LongUuidSerializer.instance().serialize(uuid)
-        cloud_event = build_base_publish_cloud_event_for_test()
+        cloud_event = build_base_notification_cloud_event_for_test()
         cloud_event.__setitem__("id", str_uuid)
-        cloud_event.__setitem__("type", "pub.v1")
+        cloud_event.__setitem__("type", "not.v1")
         cloud_event.__setitem__("source", "/body.access/1/door.front_left#Door")
         cloud_event.__setitem__("sink", "//bo.cloud/petapp")
         validator = Validators.NOTIFICATION.validator()
@@ -316,9 +326,9 @@ class TestCloudEventValidator(unittest.TestCase):
     def test_notification_type_cloudevent_is_not_valid_missing_sink(self):
         uuid = Factories.UPROTOCOL.create()
         str_uuid = LongUuidSerializer.instance().serialize(uuid)
-        cloud_event = build_base_publish_cloud_event_for_test()
+        cloud_event = build_base_notification_cloud_event_for_test()
         cloud_event.__setitem__("id", str_uuid)
-        cloud_event.__setitem__("type", "pub.v1")
+        cloud_event.__setitem__("type", "not.v1")
         cloud_event.__setitem__("source", "/body.access/1/door.front_left#Door")
         validator = Validators.NOTIFICATION.validator()
         result = validator.validate(cloud_event)
@@ -328,9 +338,9 @@ class TestCloudEventValidator(unittest.TestCase):
     def test_notification_type_cloudevent_is_not_valid_invalid_sink(self):
         uuid = Factories.UPROTOCOL.create()
         str_uuid = LongUuidSerializer.instance().serialize(uuid)
-        cloud_event = build_base_publish_cloud_event_for_test()
+        cloud_event = build_base_notification_cloud_event_for_test()
         cloud_event.__setitem__("id", str_uuid)
-        cloud_event.__setitem__("type", "pub.v1")
+        cloud_event.__setitem__("type", "not.v1")
         cloud_event.__setitem__("sink", "//bo.cloud")
         cloud_event.__setitem__("source", "/body.access/1/door.front_left#Door")
         validator = Validators.NOTIFICATION.validator()
@@ -485,3 +495,10 @@ class TestCloudEventValidator(unittest.TestCase):
         result = validator.validate(cloud_event)
         self.assertTrue(result.is_success())
         self.assertFalse(UCloudEvent.is_expired(cloud_event))
+
+    def fetching_the_notification_validator(self):
+        cloud_event = build_base_notification_cloud_event_for_test()
+        validator = CloudEventValidator.get_validator(cloud_event)
+        status = validator.validate_type(cloud_event).to_status()
+        self.assertEqual(status, ValidationResult.STATUS_SUCCESS)
+        self.assertEqual("CloudEventValidator.Notification", str(validator))

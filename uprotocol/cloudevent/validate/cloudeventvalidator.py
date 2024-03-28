@@ -71,6 +71,7 @@ class CloudEventValidator(ABC):
         @return:Returns a ValidationResult with success or a ValidationResult with failure containing all the
         errors that were found.
         """
+        self.validate_source(ce)
         validation_results = [self.validate_version(ce), self.validate_id(ce), self.validate_source(ce),
                               self.validate_type(ce), self.validate_sink(ce)]
 
@@ -277,7 +278,8 @@ class Notification(Publish):
         check_source = self.validate_topic_uri(source)
         if check_source.is_failure():
             return ValidationResult.failure(f"Invalid Notification type CloudEvent source [{source}], {check_source.get_message()}")
-    
+        return ValidationResult.success()
+
     def validate_type(self, cl_event: CloudEvent) -> ValidationResult:
         return ValidationResult.success() if UCloudEvent.get_type(cl_event) == "not.v1" else \
                 ValidationResult.failure(f"Invalid CloudEvent type [{UCloudEvent.get_type(cl_event)}]. CloudEvent of type Notification must have a type of 'not.v1'")
