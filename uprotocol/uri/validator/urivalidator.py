@@ -103,17 +103,26 @@ class UriValidator:
         return uri is None or uri == UUri()
 
     @multimethod
-    def is_rpc_method(uri: Union[UUri, None]) -> bool:
+    def is_rpc_method(uri: UUri) -> bool:
         """
         Returns true if URI is of type RPC. A UUri is of type RPC if it contains the word rpc in the resource name 
         and has an instance name and/or the id is less than MIN_TOPIC_ID.
-        @param uri:
-        @return:Returns true if this resource specifies an RPC method call or RPC response.
+        @param uri: UUri to check if it is of type RPC
+        @return: Returns true if this resource specifies an RPC method call or RPC response.
         """
         return uri is not None and UriValidator.is_rpc_method(uri.resource)
 
     @multimethod
-    def is_rpc_method(resource: Union[UResource, None]) -> bool:
+    def is_rpc_method(uri: None) -> bool:
+        """
+        Returns false if input is None.
+        @param uri: None
+        @return Returns false.
+        """
+        return False
+
+    @multimethod
+    def is_rpc_method(resource: UResource) -> bool:
         """
         Returns true if Uresource is of type RPC.
         @param resource: UResource to check if it is of type RPC method
@@ -122,6 +131,15 @@ class UriValidator:
         return resource is not None and resource.name == "rpc" and \
             (resource.HasField('instance') and resource.instance.strip() != "" or (
                 resource.HasField('id') and resource.id < UResourceBuilder.MIN_TOPIC_ID))
+
+    @multimethod
+    def is_rpc_method(resource: None) -> bool:
+        """
+        Returns false if input is None.
+        @param resource: None
+        @return Returns false.
+        """
+        return False
 
     @staticmethod
     def is_resolved(uri: UUri) -> bool:

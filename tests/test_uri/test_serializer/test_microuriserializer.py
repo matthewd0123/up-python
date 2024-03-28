@@ -79,7 +79,7 @@ class TestMicroUriSerializer(unittest.TestCase):
 
     def test_serialize_good_ipv4_based_authority(self):
         uri = UUri(authority=UAuthority(ip=socket.inet_pton(socket.AF_INET, "10.0.3.3")),
-                   entity=UEntity(id=29999, version_major=254), resource=UResourceBuilder.for_rpc_request_with_id(99))
+                   entity=UEntity(id=29999, version_major=254), resource=UResourceBuilder.for_rpc_request(99))
         bytes_uuri = MicroUriSerializer().serialize(uri)
         uri2 = MicroUriSerializer().deserialize(bytes_uuri)
         self.assertTrue(len(bytes_uuri) > 0)
@@ -120,7 +120,7 @@ class TestMicroUriSerializer(unittest.TestCase):
         size = 129
         byteArray = bytes(i for i in range(size))
         uri = UUri(authority=UAuthority(id=byteArray), entity=UEntity(id=29999, version_major=254),
-                   resource=UResourceBuilder.for_rpc_request_with_id(99))
+                   resource=UResourceBuilder.for_rpc_request(99))
         bytes_uuri = MicroUriSerializer().serialize(uri)
         self.assertEqual(len(bytes_uuri), 9 + size)
         uri2 = MicroUriSerializer().deserialize(bytes_uuri)

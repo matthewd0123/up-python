@@ -120,7 +120,7 @@ class ShortUriSerializer(UriSerializer):
         
         uri = uprotocol_uri[uprotocol_uri.index(":")+1:] if ":" in uprotocol_uri else uprotocol_uri.replace("\\", "/")
 
-        is_local = not uprotocol_uri.startswith("//")
+        is_local = not uri.startswith("//")
 
         uri_parts = uri.split("/")
         number_of_parts_in_uri = len(uri_parts)
@@ -140,29 +140,28 @@ class ShortUriSerializer(UriSerializer):
                 ue_version = uri_parts[2]
 
                 if number_of_parts_in_uri > 3:
-                    uresource = ShortUriSerializer.parse_from_string(uri_parts[3])
+                    resource = ShortUriSerializer.parse_from_string(uri_parts[3])
 
                 if number_of_parts_in_uri > 4:
                     return UUri()
         else:
             if uri_parts[2].strip() == "":
-                return UUri()
-            
-        if IpAddress.is_valid(uri_parts[2]):
-            authority = UAuthority(ip=IpAddress.to_bytes(uri_parts[2]))
-        else:
-            authority = UAuthority(ip=IpAddress.to_bytes(uri_parts[2]))
+                return UUri()   
+            if IpAddress.is_valid(uri_parts[2]):
+                authority = UAuthority(ip=IpAddress.to_bytes(uri_parts[2]))
+            else:
+                authority = UAuthority(id=bytes(uri_parts[2], "utf-8"))
 
-        if len(uri_parts) > 3:
-            ue_id = uri_parts[3]
-            if number_of_parts_in_uri > 4:
-                ue_version = uri_parts[4]
-                if number_of_parts_in_uri > 5:
-                    uresource = ShortUriSerializer.parse_from_string(uri_parts[5])
-                if number_of_parts_in_uri > 6:
-                    return UUri()
-        else:
-            return UUri(authority=authority)
+            if len(uri_parts) > 3:
+                ue_id = uri_parts[3]
+                if number_of_parts_in_uri > 4:
+                    ue_version = uri_parts[4]
+                    if number_of_parts_in_uri > 5:
+                        resource = ShortUriSerializer.parse_from_string(uri_parts[5])
+                    if number_of_parts_in_uri > 6:
+                        return UUri()
+            else:
+                return UUri(authority=authority)
 
         ue_version_int = None
         ue_id_int = None
@@ -176,20 +175,21 @@ class ShortUriSerializer(UriSerializer):
             return UUri()
         
         entity = UEntity()
-
+        new_uri = UUri()
         if ue_id_int is not None:
             entity.id = ue_id_int
+            new_uri.entity.CopyFrom(entity)
         if ue_version_int is not None:
             entity.version_major = ue_version_int
-        
-        new_uri = UUri()
-        new_uri.entity.CopyFrom(entity)
+            new_uri.entity.CopyFrom(entity)
 
         if authority is not None:
             new_uri.authority.CopyFrom(authority)
 
         if resource is not None:
             new_uri.resource.CopyFrom(resource)
+
+        return new_uri
         
     @staticmethod
     def parse_from_string(resource_string):

@@ -109,7 +109,7 @@ class MicroUriSerializer(UriSerializer):
 
         # UENTITY_ID
         byte_arr.append(keep_8_least_significant_bits(maybe_ue_id >> 8 )) 
-        byte_arr.append(keep_8_least_significant_bits(maybe_uresource_id)) 
+        byte_arr.append(keep_8_least_significant_bits(maybe_ue_id)) 
 
         # UE_VERSION
         unsigned_value: int = uri.entity.version_major
@@ -131,8 +131,6 @@ class MicroUriSerializer(UriSerializer):
                     byte_arr.extend(bytearray(uri.authority.id))
             except Exception:
                 return bytearray()
-        print("---Final---")
-        print("byte_arr:", byte_arr, list(byte_arr))
         return byte_arr
 
     def deserialize(self, micro_uri: bytes) -> UUri:
