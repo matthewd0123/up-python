@@ -26,7 +26,7 @@
 
 
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime
 
 from uprotocol.uuid.factory.uuidutils import UUIDUtils
 from uprotocol.uuid.serializer.longuuidserializer import LongUuidSerializer
