@@ -26,45 +26,54 @@
 
 import socket
 
+
 class IpAddress:
 
     @staticmethod
     def to_bytes(ip_address):
-        if ip_address == None or ip_address.strip() == "":
-            return b''
-        
+        if ip_address is None or ip_address.strip() == "":
+            return b""
+
         if IpAddress.is_valid_ipv4_address(ip_address):
             return IpAddress.convert_ipv4_to_byte_array(ip_address)
         elif IpAddress.is_valid_ipv6_address(ip_address):
             return IpAddress.convert_ipv6_to_byte_array(ip_address)
         else:
-            return b''
-        
+            return b""
+
     @staticmethod
     def is_valid(ip_address):
-        return (ip_address is not None) and not ip_address.strip() == "" and \
-            (IpAddress.is_valid_ipv4_address(ip_address) or \
-             IpAddress.is_valid_ipv6_address(ip_address))
-    
+        return (
+            (ip_address is not None)
+            and not ip_address.strip() == ""
+            and (
+                IpAddress.is_valid_ipv4_address(ip_address)
+                or IpAddress.is_valid_ipv6_address(ip_address)
+            )
+        )
+
     @staticmethod
     def is_valid_ipv4_address(ip_address):
         try:
-            return len(ip_address.split(".")) == 4 and socket.inet_pton(socket.AF_INET, ip_address)
+            return len(ip_address.split(".")) == 4 and socket.inet_pton(
+                socket.AF_INET, ip_address
+            )
         except OSError:
             return False
-    
+
     @staticmethod
     def convert_ipv4_to_byte_array(ip_address):
         return bytes(socket.inet_pton(socket.AF_INET, ip_address))
-    
 
     @staticmethod
     def is_valid_ipv6_address(ip_address):
         try:
-            return len(ip_address.split(":")) <= 8 and socket.inet_pton(socket.AF_INET6, ip_address)
+            return len(ip_address.split(":")) <= 8 and socket.inet_pton(
+                socket.AF_INET6, ip_address
+            )
         except OSError:
             return False
-        
+
     @staticmethod
     def convert_ipv6_to_byte_array(ip_address):
         return bytes(socket.inet_pton(socket.AF_INET6, ip_address))

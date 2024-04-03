@@ -40,22 +40,26 @@ from uprotocol.uri.factory.uresource_builder import UResourceBuilder
 def convert_packed_ipaddr_to_string(packed_ipaddr: bytes):
     for address_type in [socket.AF_INET, socket.AF_INET6]:
         try:
-            '''
-            socket.inet_ntop(): 
-            Convert a packed IP address (a bytes-like object of some number of bytes) 
-            to its standard, family-specific string representation (for example, '7.10.0.5' or '5aef:2b::8')
-            '''
+            """
+            socket.inet_ntop():
+            Convert a packed IP address (a bytes-like object
+            of some number of bytes)
+            to its standard, family-specific string representation
+            (for example, '7.10.0.5' or '5aef:2b::8')
+            """
             return socket.inet_ntop(address_type, packed_ipaddr)
         except ValueError:
             pass
-    
-    raise Exception("Could not find correct address family to unpack ip address from bytes to str")
+
+    raise Exception(
+        "Could not find correct address family to unpack ip address",
+        "from bytes to str",
+    )
 
 
 class ShortUriSerializer(UriSerializer):
     """
-    UUri Serializer that serializes a UUri to a Short format string per
-    https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc
+    UUri Serializer that serializes a UUri to a Short format string.
     """
 
     def serialize(self, uri: UUri) -> str:
@@ -65,31 +69,35 @@ class ShortUriSerializer(UriSerializer):
 
         if uri.HasField("authority"):
             authority: UAuthority = uri.authority
-            if uri.authority.HasField('ip'):
+            if uri.authority.HasField("ip"):
                 try:
                     string_builder.append("//")
-                    string_builder.append(convert_packed_ipaddr_to_string(authority.ip))
-                except:
+                    string_builder.append(
+                        convert_packed_ipaddr_to_string(authority.ip)
+                    )
+                except Exception:
                     print("in exception")
                     return ""
-            elif uri.authority.HasField('id'):
+            elif uri.authority.HasField("id"):
                 string_builder.append("//")
                 string_builder.append(authority.id.decode("utf-8"))
             else:
                 return ""
-        
+
         string_builder.append("/")
-        string_builder.append(self.build_software_entity_part_of_uri(uri.entity))
+        string_builder.append(
+            self.build_software_entity_part_of_uri(uri.entity)
+        )
         string_builder.append(self.build_resource_part_of_uri(uri))
 
-        return re.sub('/+$', '', "".join(string_builder))
-    
+        return re.sub("/+$", "", "".join(string_builder))
+
     @staticmethod
     def build_resource_part_of_uri(uri: UUri):
         if not uri.HasField("resource"):
             return ""
         resource: UResource = uri.resource
-        
+
         string_builder: List[str] = ["/"]
         string_builder.append(str(resource.id))
 
@@ -98,7 +106,8 @@ class ShortUriSerializer(UriSerializer):
     @staticmethod
     def build_software_entity_part_of_uri(entity):
         """
-        Create the service part of the uProtocol URI from an  software entity object.
+        Create the service part of the uProtocol URI from a
+        software entity object.
         @param use  Software Entity representing a service or an application.
         """
         string_builder: List[str] = []
@@ -106,7 +115,7 @@ class ShortUriSerializer(UriSerializer):
         string_builder.append("/")
         if entity.version_major > 0:
             string_builder.append(str(entity.version_major))
-        
+
         return "".join(string_builder)
 
     def deserialize(self, uprotocol_uri: str) -> UUri:
@@ -117,8 +126,12 @@ class ShortUriSerializer(UriSerializer):
         """
         if uprotocol_uri is None or uprotocol_uri.strip() == "":
             return UUri()
-        
-        uri = uprotocol_uri[uprotocol_uri.index(":")+1:] if ":" in uprotocol_uri else uprotocol_uri.replace("\\", "/")
+
+        uri = (
+            uprotocol_uri[uprotocol_uri.index(":") + 1:]
+            if ":" in uprotocol_uri
+            else uprotocol_uri.replace("\\", "/")
+        )
 
         is_local = not uri.startswith("//")
 
@@ -127,7 +140,7 @@ class ShortUriSerializer(UriSerializer):
 
         if number_of_parts_in_uri < 2:
             return UUri()
-        
+
         ue_id = ""
         ue_version = ""
 
@@ -140,13 +153,15 @@ class ShortUriSerializer(UriSerializer):
                 ue_version = uri_parts[2]
 
                 if number_of_parts_in_uri > 3:
-                    resource = ShortUriSerializer.parse_from_string(uri_parts[3])
+                    resource = ShortUriSerializer.parse_from_string(
+                        uri_parts[3]
+                    )
 
                 if number_of_parts_in_uri > 4:
                     return UUri()
         else:
             if uri_parts[2].strip() == "":
-                return UUri()   
+                return UUri()
             if IpAddress.is_valid(uri_parts[2]):
                 authority = UAuthority(ip=IpAddress.to_bytes(uri_parts[2]))
             else:
@@ -157,7 +172,9 @@ class ShortUriSerializer(UriSerializer):
                 if number_of_parts_in_uri > 4:
                     ue_version = uri_parts[4]
                     if number_of_parts_in_uri > 5:
-                        resource = ShortUriSerializer.parse_from_string(uri_parts[5])
+                        resource = ShortUriSerializer.parse_from_string(
+                            uri_parts[5]
+                        )
                     if number_of_parts_in_uri > 6:
                         return UUri()
             else:
@@ -171,9 +188,9 @@ class ShortUriSerializer(UriSerializer):
                 ue_version_int = int(ue_version)
             if ue_id.strip() != "":
                 ue_id_int = int(ue_id)
-        except:
+        except Exception:
             return UUri()
-        
+
         entity = UEntity()
         new_uri = UUri()
         if ue_id_int is not None:
@@ -190,11 +207,11 @@ class ShortUriSerializer(UriSerializer):
             new_uri.resource.CopyFrom(resource)
 
         return new_uri
-        
+
     @staticmethod
     def parse_from_string(resource_string):
         """
-        Static factory method for creating a UResource using a string value 
+        Static factory method for creating a UResource using a string value
         @param resource_string String that contains the UResource id.
         @return Returns a UResource object.
         """
@@ -203,7 +220,7 @@ class ShortUriSerializer(UriSerializer):
         id = None
         try:
             id = int(resource_string)
-        except:
+        except Exception:
             return UResource()
-        
+
         return UResourceBuilder.from_id(id)

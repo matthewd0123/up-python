@@ -28,9 +28,14 @@ from google.protobuf.descriptor_pb2 import ServiceOptions
 
 from uprotocol.proto.uri_pb2 import UEntity
 from uprotocol.proto.uprotocol_options_pb2 import name as Name
-from uprotocol.proto.uprotocol_options_pb2 import version_major as Version_Major
-from uprotocol.proto.uprotocol_options_pb2 import version_minor as Version_Minor
+from uprotocol.proto.uprotocol_options_pb2 import (
+    version_major as Version_Major,
+)
+from uprotocol.proto.uprotocol_options_pb2 import (
+    version_minor as Version_Minor,
+)
 from uprotocol.proto.uprotocol_options_pb2 import id as Id
+
 
 class UEntityFactory:
     """
@@ -41,14 +46,14 @@ class UEntityFactory:
     def from_proto(service_descriptor: ServiceDescriptor):
         if service_descriptor is None:
             return UEntity()
-        
+
         options: ServiceOptions = service_descriptor.GetOptions()
 
         name: str = options.Extensions[Name]
         version_major: int = options.Extensions[Version_Major]
         version_minor: int = options.Extensions[Version_Minor]
         id: int = options.Extensions[Id]
-        
+
         uentity = UEntity()
         if name is not None:
             uentity.name = name

@@ -63,6 +63,5 @@ class TestCallOptions(unittest.TestCase):
         self.assertTrue(call_options.token is None or call_options.token == "")
 
 
-
 if __name__ == '__main__':
     unittest.main()

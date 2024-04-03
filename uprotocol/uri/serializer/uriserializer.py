@@ -27,17 +27,14 @@
 
 from abc import ABC, abstractmethod
 from re import T
-from typing import Optional
-from uprotocol.proto.uri_pb2 import UUri,UAuthority,UEntity,UResource
-from uprotocol.uri.validator.urivalidator import UriValidator
+from uprotocol.proto.uri_pb2 import UUri
 
 
 class UriSerializer(ABC):
     """
-    UUris are used in transport layers and hence need to be serialized.<br>Each transport supports different
-    serialization formats.<br>For more information, please refer to <a
-    href="https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc">
-    https://github.com/eclipse-uprotocol/uprotocol-spec/blob/main/basics/uri.adoc</a>
+    UUris are used in transport layers and hence need to be serialized.<br>
+    Each transport supports different
+    serialization formats.
     """
 
     @abstractmethod

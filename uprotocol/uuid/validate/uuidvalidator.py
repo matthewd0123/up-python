@@ -1,5 +1,6 @@
 # -------------------------------------------------------------------------
 from abc import ABC, abstractmethod
+
 # Copyright (c) 2023 General Motors GTO LLC
 #
 # Licensed to the Apache Software Foundation (ASF) under one
@@ -25,7 +26,6 @@ from abc import ABC, abstractmethod
 # -------------------------------------------------------------------------
 
 
-from collections import namedtuple
 from enum import Enum
 
 from uprotocol.proto.uuid_pb2 import UUID
@@ -53,8 +53,16 @@ class UuidValidator(ABC):
             return Validators.UNKNOWN.validator()
 
     def validate(self, uuid: UUID) -> UStatus:
-        error_messages = [self.validate_version(uuid), self.validate_variant(uuid), self.validate_time(uuid)]
-        error_messages = [result.get_message() for result in error_messages if result.is_failure()]
+        error_messages = [
+            self.validate_version(uuid),
+            self.validate_variant(uuid),
+            self.validate_time(uuid),
+        ]
+        error_messages = [
+            result.get_message()
+            for result in error_messages
+            if result.is_failure()
+        ]
         error_message = ",".join(error_messages)
         if not error_message:
             return ValidationResult.success().to_status()
@@ -66,7 +74,11 @@ class UuidValidator(ABC):
 
     def validate_time(self, uuid: UUID) -> ValidationResult:
         time = UUIDUtils.get_time(uuid)
-        return ValidationResult.success() if (time is not None and time > 0 )else ValidationResult.failure("Invalid UUID Time")
+        return (
+            ValidationResult.success()
+            if (time is not None and time > 0)
+            else ValidationResult.failure("Invalid UUID Time")
+        )
 
     @abstractmethod
     def validate_variant(self, uuid: UUID) -> ValidationResult:
@@ -84,22 +96,29 @@ class InvalidValidator(UuidValidator):
 class UUIDv6Validator(UuidValidator):
     def validate_version(self, uuid: UUID) -> ValidationResult:
         version = UUIDUtils.get_version(uuid)
-        return ValidationResult.success() if version and version == Version.VERSION_TIME_ORDERED else (
-            ValidationResult.failure(
-                "Not a UUIDv6 Version"))
+        return (
+            ValidationResult.success()
+            if version and version == Version.VERSION_TIME_ORDERED
+            else (ValidationResult.failure("Not a UUIDv6 Version"))
+        )
 
     def validate_variant(self, uuid: UUID) -> ValidationResult:
         variant = UUIDUtils.get_variant(uuid)
-        return ValidationResult.success() if variant and "RFC 4122" in variant else ValidationResult.failure(
-            "Invalid UUIDv6 variant")
+        return (
+            ValidationResult.success()
+            if variant and "RFC 4122" in variant
+            else ValidationResult.failure("Invalid UUIDv6 variant")
+        )
 
 
 class UUIDv8Validator(UuidValidator):
     def validate_version(self, uuid: UUID) -> ValidationResult:
         version = UUIDUtils.get_version(uuid)
-        return ValidationResult.success() if version and version == Version.VERSION_UPROTOCOL else (
-            ValidationResult.failure(
-                "Invalid UUIDv8 Version"))
+        return (
+            ValidationResult.success()
+            if version and version == Version.VERSION_UPROTOCOL
+            else (ValidationResult.failure("Invalid UUIDv8 Version"))
+        )
 
     def validate_variant(self, uuid: UUID) -> ValidationResult:
         return ValidationResult.success()

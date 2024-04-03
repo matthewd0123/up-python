@@ -29,10 +29,9 @@ from datetime import datetime, timedelta
 import unittest
 from uprotocol.uuid.serializer.longuuidserializer import LongUuidSerializer
 from uprotocol.uuid.serializer.microuuidserializer import MicroUuidSerializer
-from uprotocol.uuid.factory.uuidfactory import UUIDFactory, Factories
+from uprotocol.uuid.factory.uuidfactory import Factories
 from uprotocol.uuid.factory.uuidutils import UUIDUtils, Version
 from uprotocol.proto.uuid_pb2 import UUID
-
 
 
 class TestUUIDFactory(unittest.TestCase):
@@ -96,7 +95,10 @@ class TestUUIDFactory(unittest.TestCase):
         for i in range(max_count * 2):
             uuid_list.append(Factories.UPROTOCOL.create(now))
 
-            self.assertEqual(UUIDUtils.get_time(uuid_list[0]), UUIDUtils.get_time(uuid_list[i]))
+            self.assertEqual(
+                UUIDUtils.get_time(uuid_list[0]),
+                UUIDUtils.get_time(uuid_list[i]),
+            )
             self.assertEqual(uuid_list[0].lsb, uuid_list[i].lsb)
             if i > max_count:
                 self.assertEqual(uuid_list[max_count].msb, uuid_list[i].msb)
@@ -152,7 +154,9 @@ class TestUUIDFactory(unittest.TestCase):
         self.assertEqual(uuid, uuid2)
 
     def test_UUIDUtils_for_random_uuid(self):
-        uuid = LongUuidSerializer.instance().deserialize("195f9bd1-526d-4c28-91b1-ff34c8e3632d")
+        uuid = LongUuidSerializer.instance().deserialize(
+            "195f9bd1-526d-4c28-91b1-ff34c8e3632d"
+        )
         version = UUIDUtils.get_version(uuid)
         time = UUIDUtils.get_time(uuid)
         bytes_data = MicroUuidSerializer.instance().serialize(uuid)
@@ -205,8 +209,10 @@ class TestUUIDFactory(unittest.TestCase):
 
     def test_UUIDUtils_for_null_uuid(self):
         self.assertFalse(UUIDUtils.get_version(None))
-        self.assertEqual(len(MicroUuidSerializer.instance().serialize(None)), 0)
-        self.assertEqual(len(LongUuidSerializer.instance().serialize(None)),0)
+        self.assertEqual(
+            len(MicroUuidSerializer.instance().serialize(None)), 0
+        )
+        self.assertEqual(len(LongUuidSerializer.instance().serialize(None)), 0)
         self.assertFalse(UUIDUtils.is_uuidv6(None))
         self.assertFalse(UUIDUtils.is_uprotocol(None))
         self.assertFalse(UUIDUtils.is_uuid(None))
@@ -216,8 +222,12 @@ class TestUUIDFactory(unittest.TestCase):
         uuid = UUID(msb=9 << 12, lsb=0)  # Invalid UUID type
         self.assertFalse(UUIDUtils.get_version(uuid))
         self.assertFalse(UUIDUtils.get_time(uuid))
-        self.assertTrue(len(MicroUuidSerializer.instance().serialize(uuid)) > 0)
-        self.assertFalse(LongUuidSerializer.instance().serialize(uuid).isspace())
+        self.assertTrue(
+            len(MicroUuidSerializer.instance().serialize(uuid)) > 0
+        )
+        self.assertFalse(
+            LongUuidSerializer.instance().serialize(uuid).isspace()
+        )
         self.assertFalse(UUIDUtils.is_uuidv6(uuid))
         self.assertFalse(UUIDUtils.is_uprotocol(uuid))
         self.assertFalse(UUIDUtils.is_uuid(uuid))
@@ -247,7 +257,8 @@ class TestUUIDFactory(unittest.TestCase):
     def test_create_uprotocol_uuid_with_different_time_values(self):
         uuid = Factories.UPROTOCOL.create()
         import time
-        time.sleep(0.01) # Sleep for 10 milliseconds
+
+        time.sleep(0.01)  # Sleep for 10 milliseconds
         uuid1 = Factories.UPROTOCOL.create()
         time = UUIDUtils.get_time(uuid)
         time1 = UUIDUtils.get_time(uuid1)
@@ -266,19 +277,14 @@ class TestUUIDFactory(unittest.TestCase):
         uuidv8_list = []
         max_count = 10000
 
-        start = datetime.utcnow()
         for _ in range(max_count):
             uuidv8_list.append(Factories.UPROTOCOL.create())
-        v8_diff = datetime.utcnow() - start
 
-        start = datetime.utcnow()
         for _ in range(max_count):
             uuidv6_list.append(Factories.UUIDV6.create())
-        v6_diff = datetime.utcnow() - start
         # print(
         #     f"UUIDv8: [{v8_diff.total_seconds() / max_count}s] UUIDv6: [{v6_diff.total_seconds() / max_count}s]")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
-

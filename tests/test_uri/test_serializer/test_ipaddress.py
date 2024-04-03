@@ -2,6 +2,7 @@ import unittest
 from uprotocol.uri.serializer.ipaddress import IpAddress
 import socket
 
+
 class TestIpAddress(unittest.TestCase):
 
     def test_to_bytes_with_null_ip_address(self):
@@ -24,7 +25,10 @@ class TestIpAddress(unittest.TestCase):
     def test_to_bytes_with_valid_ipv6_address(self):
         bytes_ = IpAddress.to_bytes("2001:db8:85a3:0:0:8a2e:370:7334")
         self.assertEqual(len(bytes_), 16)
-        self.assertEqual(socket.inet_ntop(socket.AF_INET6, bytes_), "2001:db8:85a3::8a2e:370:7334")
+        self.assertEqual(
+            socket.inet_ntop(socket.AF_INET6, bytes_),
+            "2001:db8:85a3::8a2e:370:7334",
+        )
 
     def test_is_valid_with_null_ip_address(self):
         self.assertFalse(IpAddress.is_valid(None))
@@ -45,7 +49,11 @@ class TestIpAddress(unittest.TestCase):
         self.assertFalse(IpAddress.is_valid("192.168.1.2586"))
 
     def test_is_valid_with_invalid_ipv4_passing_large_number(self):
-        self.assertFalse(IpAddress.is_valid("2875687346587326457836485623874658723645782364875623847562378465.1.1.abc"))
+        self.assertFalse(
+            IpAddress.is_valid(
+                "2875687346587326457836485623874658723645782364875623847562378465.1.1.abc"
+            )
+        )
 
     def test_is_valid_with_invalid_ipv4_passing_negative(self):
         self.assertFalse(IpAddress.is_valid("-1.1.1.abc"))
@@ -59,13 +67,19 @@ class TestIpAddress(unittest.TestCase):
     def test_is_valid_with_invalid_ipv6_address_passing_weird_values(self):
         self.assertFalse(IpAddress.is_valid("-1:ZX1:db8::"))
 
-    def test_is_valid_with_invalid_ipv6_address_that_has_way_too_many_groups(self):
-        self.assertFalse(IpAddress.is_valid("2001:db8:85a3:0:0:8a2e:370:7334:1234"))
+    def test_is_valid_with_invalid_ipv6_address_that_has_way_too_many_groups(
+        self,
+    ):
+        self.assertFalse(
+            IpAddress.is_valid("2001:db8:85a3:0:0:8a2e:370:7334:1234")
+        )
 
     def test_is_valid_with_valid_ipv6_address_that_has_8_groups(self):
         self.assertTrue(IpAddress.is_valid("2001:db8:85a3:0:0:8a2e:370:7334"))
 
-    def test_is_valid_with_invalid_ipv6_address_with_too_many_empty_groups(self):
+    def test_is_valid_with_invalid_ipv6_address_with_too_many_empty_groups(
+        self,
+    ):
         self.assertFalse(IpAddress.is_valid("2001::85a3::8a2e::7334"))
 
     def test_is_valid_with_valid_ipv6_address_with_one_empty_group(self):
@@ -74,10 +88,14 @@ class TestIpAddress(unittest.TestCase):
     def test_is_valid_with_invalid_ipv6_address_that_ends_with_a_colon(self):
         self.assertFalse(IpAddress.is_valid("2001:db8:85a3::8a2e:370:7334:"))
 
-    def test_is_valid_with_invalid_ipv6_address_that_doesnt_have_double_colon_and_not_enough_groups(self):
+    def test_is_valid_with_invalid_ipv6_address_that_doesnt_have_double_colon_and_not_enough_groups(
+        self,
+    ):
         self.assertFalse(IpAddress.is_valid("2001:db8:85a3:0:0:8a2e:370"))
 
-    def test_is_valid_with_valid_ipv6_address_that_ends_with_double_colons(self):
+    def test_is_valid_with_valid_ipv6_address_that_ends_with_double_colons(
+        self,
+    ):
         self.assertTrue(IpAddress.is_valid("2001:db8:85a3:8a2e::"))
 
     def test_is_valid_with_all_number_values(self):
@@ -104,11 +122,14 @@ class TestIpAddress(unittest.TestCase):
     def test_is_valid_with_invalid_digit3(self):
         self.assertFalse(IpAddress.is_valid("aCd:E{2g:3456"))
 
-    def test_is_valid_with_invalid_ipv6_address_that_has_double_colon_and_8_groups(self):
+    def test_is_valid_with_invalid_ipv6_address_that_has_double_colon_and_8_groups(
+        self,
+    ):
         self.assertTrue(IpAddress.is_valid("dead:beef:85a3::0:0:8a2e:370"))
 
     def test_is_valid_with_invalid_ipv6_address_that_has_only_7_groups(self):
         self.assertFalse(IpAddress.is_valid("dead:beef:85a3:0:0:8a2e:370"))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

@@ -46,7 +46,8 @@ class LongUriSerializer(UriSerializer):
         """
         Support for serializing UUri objects into their String format.<br><br>
         @param uri: UUri object to be serialized to the String format.
-        @return:Returns the String format of the supplied UUri that can be used as a sink or a source in a
+        @return:Returns the String format of the supplied UUri that can be
+        used as a sink or a source in a
         uProtocol publish communication.
         """
         if uri is None or UriValidator.is_empty(uri):
@@ -54,7 +55,7 @@ class LongUriSerializer(UriSerializer):
 
         sb = []
 
-        if uri.HasField('authority'):
+        if uri.HasField("authority"):
             sb.append("//")
             sb.append(uri.authority.name)
 
@@ -63,12 +64,12 @@ class LongUriSerializer(UriSerializer):
         sb.append(self.build_software_entity_part_of_uri(uri.entity))
         sb.append(self.build_resource_part_of_uri(uri))
 
-        return re.sub('/+$', '', "".join(sb))
+        return re.sub("/+$", "", "".join(sb))
 
     @staticmethod
     def build_resource_part_of_uri(uuri: UUri) -> str:
 
-        if not uuri.HasField('resource'):
+        if not uuri.HasField("resource"):
             return ""
         u_resource = uuri.resource
 
@@ -84,9 +85,12 @@ class LongUriSerializer(UriSerializer):
     @staticmethod
     def build_software_entity_part_of_uri(entity: UEntity) -> str:
         """
-        Create the service part of the uProtocol URI from an UEntity object.<br><br>
-        @param entity:Software Entity representing a service or an application.
-        @return: Returns the String representation of the UEntity in the uProtocol URI.
+        Create the service part of the uProtocol URI from an
+        UEntity object.<br><br>
+        @param entity:Software Entity representing a service
+        or an application.
+        @return: Returns the String representation of the UEntity
+        in the uProtocol URI.
         """
         sb = str(entity.name.strip())
         sb += "/"
@@ -104,8 +108,11 @@ class LongUriSerializer(UriSerializer):
         """
         if u_protocol_uri is None or u_protocol_uri.strip() == "":
             return UUri()
-        uri = u_protocol_uri[u_protocol_uri.index(":") + 1:] \
-            if ":" in u_protocol_uri else u_protocol_uri.replace('\\', '/')
+        uri = (
+            u_protocol_uri[u_protocol_uri.index(":") + 1:]
+            if ":" in u_protocol_uri
+            else u_protocol_uri.replace("\\", "/")
+        )
 
         is_local = not uri.startswith("//")
         uri_parts = LongUriSerializer.remove_empty(uri.split("/"))
@@ -162,7 +169,8 @@ class LongUriSerializer(UriSerializer):
     @staticmethod
     def parse_from_string(resource_string: str) -> UResource:
         """
-        Static builder method for creating a UResource using a string that contains name + instance + message.<br><br>
+        Static builder method for creating a UResource using a string
+        that contains name + instance + message.<br><br>
         @param resource_string:String that contains the UResource information.
         @return:Returns a UResource object.
         """
@@ -172,9 +180,15 @@ class LongUriSerializer(UriSerializer):
         parts = LongUriSerializer.remove_empty(resource_string.split("#"))
         name_and_instance = parts[0]
 
-        name_and_instance_parts = LongUriSerializer.remove_empty(name_and_instance.split("."))
+        name_and_instance_parts = LongUriSerializer.remove_empty(
+            name_and_instance.split(".")
+        )
         resource_name = name_and_instance_parts[0]
-        resource_instance = name_and_instance_parts[1] if len(name_and_instance_parts) > 1 else None
+        resource_instance = (
+            name_and_instance_parts[1]
+            if len(name_and_instance_parts) > 1
+            else None
+        )
         resource_message = parts[1] if len(parts) > 1 else None
 
         u_resource = UResource(name=resource_name)
@@ -182,7 +196,11 @@ class LongUriSerializer(UriSerializer):
             u_resource.instance = resource_instance
         if resource_message is not None:
             u_resource.message = resource_message
-        if "rpc" in resource_name and resource_instance is not None and "response" in resource_instance:
+        if (
+            "rpc" in resource_name
+            and resource_instance is not None
+            and "response" in resource_instance
+        ):
             u_resource.id = 0
 
         return u_resource
@@ -192,7 +210,7 @@ class LongUriSerializer(UriSerializer):
         result = parts[:]
 
         # Iterate through the list in reverse and remove empty strings
-        while result and result[-1] == '':
+        while result and result[-1] == "":
             result.pop()
 
         return result
