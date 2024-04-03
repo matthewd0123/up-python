@@ -65,4 +65,4 @@ jobs:
 
     - name: Run tests and coverage report
       run: |       
-        python -m coverage run --source tests/ -m unittest discover
+        coverage run --source tests/ -m unittest discover
