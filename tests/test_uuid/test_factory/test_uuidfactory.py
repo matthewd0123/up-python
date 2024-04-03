@@ -246,7 +246,7 @@ class TestUUIDFactory(unittest.TestCase):
         self.assertTrue(uuid1 == UUID())
 
     def test_create_uprotocol_uuid_in_the_past(self):
-        past = datetime.utcnow() - timedelta(seconds=10)
+        past = datetime.now(datetime.UTC) - timedelta(seconds=10)
         uuid = Factories.UPROTOCOL.create(past)
         time = UUIDUtils.get_time(uuid)
         self.assertTrue(UUIDUtils.is_uprotocol(uuid))

@@ -61,7 +61,7 @@ class TestUuidValidator(unittest.TestCase):
         )
 
     def test_invalid_time_uuid(self):
-        epoch_time = datetime.utcfromtimestamp(0).replace(tzinfo=timezone.utc)
+        epoch_time = datetime.datetime.fromtimestamp(0, datetime.UTC)
 
         uuid = Factories.UPROTOCOL.create(
             epoch_time
