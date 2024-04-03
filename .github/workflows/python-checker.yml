@@ -6,12 +6,13 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Upload Python Package
+name: Run Linter/Coverage Test
 
 on:
-  release:
-    types: [published]
-  workflow_dispatch:
+  push:
+    branches: [ "main", "test_branch" ]
+  pull_request:
+    branches: [ "main", "test_branch" ]
 
 permissions:
   contents: read
@@ -48,18 +49,21 @@ jobs:
       run: |
         poetry install
 
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 --ignore W503,F811 . --max-line-length=127 --exclude **/*pb2.py
+
     - name: Run prebuild script
       run: |
         cd scripts
         # Run the script within the Poetry virtual environment
         poetry run python pull_and_compile_protos.py
-     
 
-    - name: Build package
-      run: poetry build
-
-    - name: Publish package
-      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+    - name: Get Cover 
+      uses: orgoro/coverage@v3.1
       with:
-        user: __token__
-        password: ${{ secrets.PYPI_TOKEN }}
+        coverageFile: ./coverage.xml
+        token: ${{ secrets.GITHUB_TOKEN }}
