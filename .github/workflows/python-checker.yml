@@ -43,7 +43,7 @@ jobs:
     - name: Install Poetry
       run: |
         python -m pip install --upgrade pip
-        python -m pip install flake8 pytest
+        python -m pip install flake8 pytest coverage
         python -m pip install poetry
 
     - name: Install dependencies
@@ -63,8 +63,6 @@ jobs:
         # Run the script within the Poetry virtual environment
         poetry run python pull_and_compile_protos.py
 
-    - name: Get Cover 
-      uses: orgoro/coverage@v3.1
-      with:
-        coverageFile: ./coverage.xml
-        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Run tests and coverage report
+      run: |       
+        python -m coverage run --source tests/ -m unittest discover
